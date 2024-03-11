@@ -1,34 +1,30 @@
 package objects;
 
 public class Node {
-    private Edge source;
-    private Edge target;
+    private Edge incomingEdge;
+    private Edge outgoingEdge;
     private int weight;
 
-    public Node(Edge source, Edge target, int weight) {
-        this.source = source;
-        this.target = target;
-        this.weight = weight;
+    public Node(){}
+
+    public Edge getIncomingEdge() {
+        return incomingEdge;
     }
 
-    public Edge getSource() {
-        return source;
-    }
-
-    public Edge getTarget() {
-        return target;
+    public Edge getOutgoingEdge() {
+        return outgoingEdge;
     }
 
     public int getWeight() {
         return weight;
     }
 
-    public void setSource(Edge source) {
-        this.source = source;
+    public void setIncomingEdge(Edge incomingEdge) {
+        this.incomingEdge = incomingEdge;
     }
 
-    public void setTarget(Edge target) {
-        this.target = target;
+    public void setOutgoingEdge(Edge outgoingEdge) {
+        this.outgoingEdge = outgoingEdge;
     }
 
     public void setWeight(int weight) {

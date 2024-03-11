@@ -49,4 +49,16 @@ public class Instance {
             throw new RuntimeException(e);
         }
     }
+
+    public int getnTeams() {
+        return nTeams;
+    }
+
+    public int[][] getDist() {
+        return dist;
+    }
+
+    public int[][] getOpponents() {
+        return opponents;
+    }
 }
