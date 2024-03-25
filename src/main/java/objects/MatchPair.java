@@ -1,12 +1,19 @@
 package objects;
 
+import java.util.Collections;
+
 public class MatchPair {
-    private int homeTeam;
-    private int outTeam;
+    private final int homeTeam;
+    private final int outTeam;
 
     public MatchPair(int team1, int team2) {
-        this.outTeam = Math.min(team1, team2);
-        this.homeTeam = Math.max(team1, team2);
+        if (team1 < 0 || team2 < 0) {
+            homeTeam = Math.abs(Math.min(team1, team2));
+            outTeam = Math.max(team1, team2);
+        } else {
+            homeTeam = team1;
+            outTeam = team2;
+        }
     }
 
     public int getHomeTeam() {
@@ -15,5 +22,9 @@ public class MatchPair {
 
     public int getOutTeam() {
         return outTeam;
+    }
+
+    public String toString() {
+        return "(" + homeTeam + ", " + outTeam + ")";
     }
 }
