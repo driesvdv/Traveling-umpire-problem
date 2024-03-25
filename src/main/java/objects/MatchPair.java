@@ -1,10 +1,14 @@
 package objects;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class MatchPair {
     private final int homeTeam;
     private final int outTeam;
+    private List<MatchPair> feasibleChildren;
+
 
     public MatchPair(int team1, int team2) {
         if (team1 < 0 || team2 < 0) {
@@ -14,6 +18,7 @@ public class MatchPair {
             homeTeam = team1;
             outTeam = team2;
         }
+        feasibleChildren = new ArrayList<>();
     }
 
     public int getHomeTeam() {
@@ -26,5 +31,8 @@ public class MatchPair {
 
     public String toString() {
         return "(" + homeTeam + ", " + outTeam + ")";
+    }
+    public void addFeasibleChildMatch(MatchPair mp){
+        feasibleChildren.add(mp);
     }
 }

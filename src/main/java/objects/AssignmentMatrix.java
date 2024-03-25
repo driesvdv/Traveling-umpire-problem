@@ -66,4 +66,8 @@ public class AssignmentMatrix {
             }
         }
     }
+
+    public MatchPair[][] getTranslationMatrix() {
+        return translationMatrix;
+    }
 }
