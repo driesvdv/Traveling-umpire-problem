@@ -58,11 +58,15 @@ public class AssignmentMatrix {
         }
     }
 
+    //Zit hier geen fout in? De teams kloppen niet
     private void initTranslationMatrix(Instance inst){
         for (int i = 0; i < nRounds; i++) {
             for (int j = 0; j < nUmpires; j++) {
-                var tmp = new MatchPair(j,inst.getOpponents()[i][j]);
-                translationMatrix[i][j] = tmp;
+                //var tmp = new MatchPair(j,inst.getOpponents()[i][j]);
+                int team1 = inst.getOpponents()[i][j];
+                int team2 = inst.getOpponents()[i][Math.abs(team1)-1];
+                var test = new MatchPair(team1, team2);
+                translationMatrix[i][j] = test;//tmp;
             }
         }
     }

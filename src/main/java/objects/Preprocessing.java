@@ -27,6 +27,7 @@ public class Preprocessing {
                 }
             }
         }
+        System.out.println();
     }
 
     public static boolean contains(int[] arr, int value) {
