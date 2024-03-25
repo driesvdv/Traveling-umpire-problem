@@ -19,7 +19,7 @@ public class Instance {
 
             // Initialize arrays
             dist = new int[nTeams][nTeams];
-            opponents = new int[nTeams * (nTeams - 1)][nTeams];
+            opponents = new int[nTeams * 2 - 2][nTeams];
 
             br.readLine(); // Skip line
             br.readLine(); // Skip line
@@ -54,8 +54,8 @@ public class Instance {
         return nTeams;
     }
 
-    public int[][] getDist() {
-        return dist;
+    public int getDist(int i, int j) {
+        return dist[i][j];
     }
 
     public int[][] getOpponents() {
