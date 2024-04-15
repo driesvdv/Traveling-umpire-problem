@@ -9,9 +9,6 @@ public class Main {
 
         AssignmentMatrix assignmentMatrix = new AssignmentMatrix(instance);
 
-
-
-
+        System.out.println("debug");
     }
-
 }
