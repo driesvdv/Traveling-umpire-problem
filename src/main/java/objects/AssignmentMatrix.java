@@ -61,12 +61,16 @@ public class AssignmentMatrix {
     //Zit hier geen fout in? De teams kloppen niet
     private void initTranslationMatrix(Instance inst){
         for (int i = 0; i < nRounds; i++) {
-            for (int j = 0; j < nUmpires; j++) {
-                //var tmp = new MatchPair(j,inst.getOpponents()[i][j]);
+            //int[] controleMatrix = new int[teams];
+            int counter = 0;
+            for (int j = 0; j < teams; j++) {
                 int team1 = inst.getOpponents()[i][j];
-                int team2 = inst.getOpponents()[i][Math.abs(team1)-1];
-                var test = new MatchPair(team1, team2);
-                translationMatrix[i][j] = test;//tmp;
+                if (team1 > 0){
+                    int team2 = inst.getOpponents()[i][Math.abs(team1)-1];
+                    var test = new MatchPair(team1, team2);
+                    translationMatrix[i][counter] = test;//tmp; //Klopt niet bij j groter dan 4
+                    counter++;
+                }
             }
         }
     }

@@ -17,11 +17,30 @@ public class Preprocessing {
 
     }
     //Only look at the next round, looking at further rounds would require us to know which umpire follows this path.
-    public void preProcessQ1(){
+    public void preProcessQ1andQ2(){
         for (int i = 0; i < matchPairs.length -1; i++){
             for (int j = 0; j < matchPairs[i].length;j++){
                 for (int k = 0; k < matchPairs[i+1].length; k++) {
-                    if (matchPairs[i][j].getHomeTeam() != matchPairs[i+1][k].getHomeTeam()){
+                    int isFeasibleMatch = 0;
+                    if (q1 > 1){
+                        if (matchPairs[i][j].getHomeTeam() != matchPairs[i+1][k].getHomeTeam()){
+                            isFeasibleMatch += 1;
+                            //matchPairs[i][j].addFeasibleChildMatch(matchPairs[i+1][k]);
+                        }
+                    }
+                    else{
+                        isFeasibleMatch += 1;
+                    }
+                    if (q2 > 1){
+                        if (checkMatchesForSameTeams(matchPairs[i][j], matchPairs[i+1][k])){
+                            isFeasibleMatch +=1;
+                            //matchPairs[i][j].addFeasibleChildMatch(matchPairs[i+1][k]);
+                        }
+                    }
+                    else{
+                        isFeasibleMatch += 1;
+                    }
+                    if (isFeasibleMatch == 2){
                         matchPairs[i][j].addFeasibleChildMatch(matchPairs[i+1][k]);
                     }
                 }
@@ -29,14 +48,13 @@ public class Preprocessing {
         }
         System.out.println();
     }
-
-    public static boolean contains(int[] arr, int value) {
-        for (int num : arr) {
-            if (num == value) {
-                return true;
-            }
+    public boolean checkMatchesForSameTeams(MatchPair m1, MatchPair m2){
+        if (m1.getHomeTeam() == m2.getHomeTeam() || m1.getHomeTeam() == m2.getOutTeam()){
+            return false;
         }
-        return false;
+        if (m1.getOutTeam() == m2.getHomeTeam() || m1.getOutTeam() == m2.getOutTeam()){
+            return false;
+        }
+        return true;
     }
-
 }

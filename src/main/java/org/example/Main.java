@@ -9,7 +9,7 @@ public class Main {
         Instance instance = new Instance();
         AssignmentMatrix assignmentMatrix = new AssignmentMatrix(instance);
         Preprocessing p = new Preprocessing(instance.getOpponents(), 1,3, assignmentMatrix.getTranslationMatrix());
-        p.preProcessQ1();
+        p.preProcessQ1andQ2();
 
 
 
