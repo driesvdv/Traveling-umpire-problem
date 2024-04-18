@@ -4,9 +4,6 @@ public class Preprocessing {
     private int[][] opponents;
     private int q1;
     private int q2;
-    private int[][] isFeasible;
-    private int[][] feasibleMatches;
-    //private PreprocessedMatchPairs[][] matchPairs;
     private MatchPair[][] matchPairs;
 
     public Preprocessing(int[][] opponents, int q1, int q2, MatchPair[][] inputMatchpairs){
@@ -56,5 +53,8 @@ public class Preprocessing {
             return false;
         }
         return true;
+    }
+    public MatchPair[][] getMatchPairs(){
+        return this.matchPairs;
     }
 }

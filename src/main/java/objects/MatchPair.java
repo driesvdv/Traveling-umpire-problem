@@ -35,4 +35,7 @@ public class MatchPair {
     public void addFeasibleChildMatch(MatchPair mp){
         feasibleChildren.add(mp);
     }
+    public List<MatchPair> getFeasibleChildren(){
+        return new ArrayList<>(feasibleChildren);
+    }
 }
