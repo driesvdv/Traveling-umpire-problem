@@ -48,8 +48,7 @@ public class BranchAndBound {
     public boolean executeBranchAndBound(){
         int nextUmpire = (umpire % amountOfUmpires) +1;
         int nextRound = ((umpire == assignmentMatrix.getN()) ? round +1 : round);
-        List<MatchPair> feasibleAllcations = getFeasibleAllocations(round-1,umpire);
-        
+        List<MatchPair> feasibleAllcations = getFeasibleAllocations(round-1,umpire, assignmentMatrix.getQ1(), assignmentMatrix.getQ2());
         for (MatchPair mp : feasibleAllcations){
             assignmentMatrix.assignUmpireToMatch(round,umpire,mp);
             if (!solutionIsComplete(assignmentMatrix)){
@@ -99,17 +98,47 @@ public class BranchAndBound {
             return false;
         }
     }
-    public List<MatchPair> getFeasibleAllocations(int round, int umpire){
+    //Todo fix q1 and q2
+    public List<MatchPair> getFeasibleAllocations(int round, int umpire, int q1, int q2){
         List<MatchPair> feasibleAllocations = assignmentMatrix.getPossibleAllocations(round, umpire);
-        for (int i = 0; i < umpire-1; i++){
+        for (int i = 0; i < umpire-1; i++){ //checks if an umpire isn't assigned to a match in the same round
             if (round+1 < amountOfRounds){
                 if (feasibleAllocations.contains(assignmentMatrix.getSolutionMatrix()[round+1][i])){
                     feasibleAllocations.remove(assignmentMatrix.getSolutionMatrix()[round+1][i]);
                 }
+                else{
+                    if (!checkPreviousMatches(round +1, umpire, q1, q2, assignmentMatrix.getSolutionMatrix()[round+1][i])){
+                        feasibleAllocations.remove(assignmentMatrix.getSolutionMatrix()[round+1][i]);
+                    }
+                }
             }
         }
-        
         return feasibleAllocations;
+    }
+
+    public boolean checkPreviousMatches(int round, int umpire, int q1, int q2, MatchPair mp){
+        for (int i = 1; i < q1; i++){
+            if (round - q1 >0){
+                if (assignmentMatrix.getSolutionMatrix()[round-i][umpire].getHomeTeam() == mp.getHomeTeam()){
+                    return false;
+                }
+            }
+        }
+        return checkQ2(round, umpire-1, mp, q2);
+    }
+
+    public boolean checkQ2(int round, int umpire, MatchPair mp, int q2){
+        for (int i = 1; i < q2; i++){
+
+            if (round - i >0){
+                if (assignmentMatrix.getSolutionMatrix()[round-i][umpire].getHomeTeam() == mp.getHomeTeam() || assignmentMatrix.getSolutionMatrix()[round-i][umpire].getHomeTeam() == mp.getOutTeam()){
+                    return false;
+                } else if (assignmentMatrix.getSolutionMatrix()[round-i][umpire].getOutTeam() == mp.getHomeTeam() || assignmentMatrix.getSolutionMatrix()[round-i][umpire].getOutTeam() == mp.getOutTeam()){
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
 }

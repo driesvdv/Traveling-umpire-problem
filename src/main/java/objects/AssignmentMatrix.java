@@ -36,7 +36,7 @@ public class AssignmentMatrix {
 
     public AssignmentMatrix(Instance instance) {
         q1 = 1;
-        q2 = 2;
+        q2 = 3;
         nRounds = instance.getnTeams() * 2 - 2;
 
         nUmpires = instance.getnTeams() / 2;
@@ -54,13 +54,13 @@ public class AssignmentMatrix {
         preprocessMatches();
         System.out.println("debug");
     }
-  
+
     public void preprocessMatches(){
         Preprocessing preprocesser = new Preprocessing(this.assignmentMatrix, q1,q2, translationMatrix);
         preprocesser.preProcessQ1andQ2();
         this.translationMatrix = preprocesser.getMatchPairs();
     }
-  
+
     //Todo make this with MatchPairs
     private void initAssignMentMatrix(){
         for (int i = 0; i < nRounds; i++) {
@@ -104,7 +104,7 @@ public class AssignmentMatrix {
 
     /**
      * Can the umpire still visit each distinct team location at least once?
-     * 
+     *
      * @return false if umpire can't visit all teams anymore
      * @return true if solution is valid
      */
@@ -117,7 +117,7 @@ public class AssignmentMatrix {
                 visited[team1] = true;
                 visited[team2] = true;
             }
-            
+
             int unvisitedTeams = (int) IntStream.range(0, nTeams).filter(x -> !visited[x]).count();
             // todo: debug this later to make sure there are no off by one errors
             if (unvisitedTeams > nRounds - currentRound) {
@@ -177,5 +177,13 @@ public class AssignmentMatrix {
     }
     public void assignUmpireToMatch(int round, int umpire, MatchPair match){
         solutionMatrix[round][umpire-1] = match;
+    }
+
+    public int getQ1() {
+        return q1;
+    }
+
+    public int getQ2() {
+        return q2;
     }
 }
