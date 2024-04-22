@@ -34,8 +34,6 @@ public class AssignmentMatrix {
      */
     private MatchPair[][] translationMatrix;
 
-    private MatchPair[][] solutionMatrix;
-
     public AssignmentMatrix(Instance instance) {
         q1 = 1;
         q2 = 2;
@@ -43,7 +41,7 @@ public class AssignmentMatrix {
 
         nUmpires = instance.getnTeams() / 2;
         nTeams = instance.getnTeams();
-        n = teams/2;
+        n = nTeams/2;
 
         assignmentMatrix = new int[nRounds][nUmpires];
         weightMatrix = new int[nTeams][nTeams];
@@ -92,7 +90,7 @@ public class AssignmentMatrix {
         for (int i = 0; i < nRounds; i++) {
             //int[] controleMatrix = new int[teams];
             int counter = 0;
-            for (int j = 0; j < teams; j++) {
+            for (int j = 0; j < nTeams; j++) {
                 int team1 = inst.getOpponents()[i][j];
                 if (team1 > 0){
                     int team2 = inst.getOpponents()[i][Math.abs(team1)-1];
