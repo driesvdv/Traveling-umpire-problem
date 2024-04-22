@@ -1,7 +1,5 @@
 package objects;
 
-import java.util.Collections;
-
 public class MatchPair {
     private final int homeTeam;
     private final int outTeam;

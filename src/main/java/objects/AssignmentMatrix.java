@@ -1,14 +1,13 @@
 package objects;
 
 import data.Instance;
-import jdk.jshell.spi.ExecutionControl;
-
 import java.util.Arrays;
+import java.util.stream.IntStream;
 
 public class AssignmentMatrix {
     private int nRounds;
     private int nUmpires;
-    private int teams;
+    private int nTeams;
 
     /**
      * The assignment matrix is a 2D array that represents the assignment of umpires
@@ -28,13 +27,15 @@ public class AssignmentMatrix {
      */
     private MatchPair[][] translationMatrix;
 
+    private MatchPair[][] solutionMatrix;
+
     public AssignmentMatrix(Instance instance) {
         nRounds = instance.getnTeams() * 2 - 2;
         nUmpires = instance.getnTeams() / 2;
-        teams = instance.getnTeams();
+        nTeams = instance.getnTeams();
 
         assignmentMatrix = new int[nRounds][nUmpires];
-        weightMatrix = new int[teams][teams];
+        weightMatrix = new int[nTeams][nTeams];
         translationMatrix = new MatchPair[nRounds][nUmpires];
 
         initAssignMentMatrix();
@@ -59,20 +60,20 @@ public class AssignmentMatrix {
     }
 
     private void initWeightMatrix(Instance inst) {
-        for (int i = 0; i < teams; i++) {
-            for (int j = 0; j < teams; j++) {
+        for (int i = 0; i < nTeams; i++) {
+            for (int j = 0; j < nTeams; j++) {
                 weightMatrix[i][j] = inst.getDist(i, j);
             }
         }
     }
 
-    private void initTranslationMatrix(Instance inst){
+    private void initTranslationMatrix(Instance inst) {
         for (int i = 0; i < nRounds; i++) {
             int counter = 0;
-            for (int j = 0; j < teams; j++) {
+            for (int j = 0; j < nTeams; j++) {
                 int team1 = inst.getOpponents()[i][j];
-                if (team1 > 0){
-                    int team2 = inst.getOpponents()[i][Math.abs(team1)-1];
+                if (team1 > 0) {
+                    int team2 = inst.getOpponents()[i][Math.abs(team1) - 1];
                     var test = new MatchPair(team1, team2);
                     translationMatrix[i][counter] = test;
                     counter++;
@@ -82,38 +83,30 @@ public class AssignmentMatrix {
     }
 
     /**
-     * Returns true if all team locations have been visited by all the umpires
-     * Every umpire should visit each team at least once
-     *
-     * @return boolean
+     * Can the umpire still visit each distinct team location at last once?
+     * If not return the amount of iterations to backtrack
+     * 
+     * @return false if umpire can't visit all teams anymore
+     * @return true if solution is valid
      */
-    public boolean haveUmpiresVisitedAllTeams() {
-        // There should be nTeams distinct values in each column
-        for (int[] row : assignmentMatrix) {
-            if (Arrays.stream(row).distinct().count() != teams) {
+    public boolean canUmpiresVisitAllTeams() {
+        // Check so that all teams are visited at least once by an umpire
+
+        for (int i=0; i<nUmpires; i++) {
+            boolean[] visited = new boolean[nTeams];
+            for (int j=0; j<nRounds; j++) {
+                int team1 = translationMatrix[j][i].getHomeTeam();
+                int team2 = translationMatrix[j][i].getOutTeam();
+                visited[team1] = true;
+                visited[team2] = true;
+            }
+            if (IntStream.range(0, visited.length).anyMatch(x -> !visited[x])) {
                 return false;
             }
         }
 
+
         return true;
-    }
-
-    /**
-     * Can the umpire still visit each distinct team at last once?
-     * If not return the amount of iterations to backtrack
-     * 
-     * @return
-     */
-    public int canUmpiresVisitAllTeams() {
-        int[] teamCount = new int[teams];
-        for (int[] round : assignmentMatrix) {
-            for (int umpire : round) {
-                teamCount[umpire]++;
-            }
-        }
-
-        int max = Arrays.stream(teamCount).max().getAsInt();
-        return max - 1;
     }
 
     /**
@@ -124,8 +117,10 @@ public class AssignmentMatrix {
      */
     public boolean haveUmpiresOneMatchPerRound() {
         // No double values per row
-        for (int[] round : assignmentMatrix) {
-            if (Arrays.stream(round).distinct().count() != nUmpires) {
+        for (int i = 0; i < nRounds; i++) {
+            int[] row = assignmentMatrix[i];
+
+            if (Arrays.stream(row).distinct().count() != row.length) {
                 return false;
             }
         }
