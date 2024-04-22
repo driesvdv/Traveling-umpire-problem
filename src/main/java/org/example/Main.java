@@ -15,6 +15,6 @@ public class Main {
         BranchAndBound branchAndBound = new BranchAndBound(assignmentMatrix);
         branchAndBound.executeBranchAndBound();
 
-        System.out.println("debug");
+        System.out.println("Finished");
     }
 }

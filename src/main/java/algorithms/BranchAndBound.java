@@ -45,8 +45,9 @@ public class BranchAndBound {
         amountOfUmpires = assignmentMatrix.getnUmpires();
         amountOfRounds = assignmentMatrix.getnRounds();
     }
+    
     public boolean executeBranchAndBound(){
-        int nextUmpire = (umpire % amountOfUmpires) +1;
+        int nextUmpire = (umpire % amountOfUmpires) + 1;
         int nextRound = ((umpire == assignmentMatrix.getN()) ? round +1 : round);
         List<MatchPair> feasibleAllcations = getFeasibleAllocations(round-1,umpire, assignmentMatrix.getQ1(), assignmentMatrix.getQ2());
         for (MatchPair mp : feasibleAllcations){
@@ -56,17 +57,22 @@ public class BranchAndBound {
                 if (branchAndBound.executeBranchAndBound()){
                     return true;
                 }
+                
+                if(!assignmentMatrix.canUmpiresVisitAllTeams(nextRound)){
+                    return false;
+                }
             }
             else{
-                //TODO fix local search
+                //TODO add local search
 
                 return true;
             }
-            assignmentMatrix.assignUmpireToMatch(round,umpire,null);
+            //assignmentMatrix.assignUmpireToMatch(round,umpire,null);
         }
         return false;
     }
-    //TODO assignmentmatrix aanpassen zodat daar matchpairs inzitten ipv integers
+
+//    TODO assignmentmatrix aanpassen zodat daar matchpairs inzitten ipv integers
 //    public void executeBranchAndBound(){
 //        int nextUmpire = (umpire % amountOfUmpires) +1;
 //        int nextRound = ((umpire == amountOfRounds) ? round +1 : round);

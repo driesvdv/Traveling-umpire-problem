@@ -2,7 +2,6 @@ package objects;
 
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class MatchPair {
@@ -33,9 +32,11 @@ public class MatchPair {
     public String toString() {
         return "(" + homeTeam + ", " + outTeam + ")";
     }
+
     public void addFeasibleChildMatch(MatchPair mp){
         feasibleChildren.add(mp);
     }
+    
     public List<MatchPair> getFeasibleChildren(){
         return new ArrayList<>(feasibleChildren);
     }

@@ -114,11 +114,16 @@ public class AssignmentMatrix {
             for (int j=0; j<nRounds; j++) {
                 int team1 = translationMatrix[j][i].getHomeTeam();
                 int team2 = translationMatrix[j][i].getOutTeam();
-                visited[team1] = true;
-                visited[team2] = true;
+                visited[team1 - 1] = true; // Subtract 1 because teams are 1-indexed
+                visited[team2 - 1] = true; // Subtract 1 because teams are 1-indexed
             }
 
             int unvisitedTeams = (int) IntStream.range(0, nTeams).filter(x -> !visited[x]).count();
+
+            if (nRounds - currentRound < 0) {
+                throw new RuntimeException("Current round is negative");
+            }
+
             // todo: debug this later to make sure there are no off by one errors
             if (unvisitedTeams > nRounds - currentRound) {
                 return false;
