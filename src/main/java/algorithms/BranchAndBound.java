@@ -49,9 +49,7 @@ public class BranchAndBound {
         int nextUmpire = (umpire % amountOfUmpires) +1;
         int nextRound = ((umpire == assignmentMatrix.getN()) ? round +1 : round);
         List<MatchPair> feasibleAllcations = getFeasibleAllocations(round-1,umpire);
-        if (umpire == 4 && round == 13){
-            System.out.println();
-        }
+      
         for (MatchPair mp : feasibleAllcations){
             assignmentMatrix.assignUmpireToMatch(round,umpire,mp);
             if (!solutionIsComplete(assignmentMatrix)){
@@ -110,6 +108,7 @@ public class BranchAndBound {
                 }
             }
         }
+        
         return feasibleAllocations;
     }
 

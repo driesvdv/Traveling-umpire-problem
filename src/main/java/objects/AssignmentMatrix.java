@@ -109,9 +109,7 @@ public class AssignmentMatrix {
      * @return false if umpire can't visit all teams anymore
      * @return true if solution is valid
      */
-    public boolean canUmpiresVisitAllTeams() {
-        // Check so that all teams are visited at least once by an umpire
-
+    public boolean canUmpiresVisitAllTeams(int currentRound) {
         for (int i=0; i<nUmpires; i++) {
             boolean[] visited = new boolean[nTeams];
             for (int j=0; j<nRounds; j++) {
@@ -120,11 +118,13 @@ public class AssignmentMatrix {
                 visited[team1] = true;
                 visited[team2] = true;
             }
-            if (IntStream.range(0, visited.length).anyMatch(x -> !visited[x])) {
+            
+            int unvisitedTeams = (int) IntStream.range(0, nTeams).filter(x -> !visited[x]).count();
+            // todo: debug this later to make sure there are no off by one errors
+            if (unvisitedTeams > nRounds - currentRound) {
                 return false;
             }
         }
-
 
         return true;
     }
