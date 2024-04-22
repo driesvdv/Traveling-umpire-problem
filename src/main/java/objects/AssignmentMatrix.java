@@ -103,8 +103,7 @@ public class AssignmentMatrix {
     }
 
     /**
-     * Can the umpire still visit each distinct team location at last once?
-     * If not return the amount of iterations to backtrack
+     * Can the umpire still visit each distinct team location at least once?
      * 
      * @return false if umpire can't visit all teams anymore
      * @return true if solution is valid
