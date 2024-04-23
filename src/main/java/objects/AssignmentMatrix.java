@@ -233,4 +233,7 @@ private void initTranslationMatrix(Instance inst) {
     public int getQ2() {
         return q2;
     }
+    public int getDistance(int team1, int team2){
+        return weightMatrix[team1][team2];
+    }
 }

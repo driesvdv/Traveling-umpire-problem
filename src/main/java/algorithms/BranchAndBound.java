@@ -100,6 +100,7 @@ public class BranchAndBound {
         }
         return true;
     }
+    //Volgens de paper zal de volgende toewijzing telkens die zijn met de kortste afstand. Er zal dus telkens op afstand gesorteerd moeten worden.
     public List<MatchPair> getFeasibleAllocations(int round, int umpire, int q1, int q2){
         List<MatchPair> feasibleAllocations = assignmentMatrix.getPossibleAllocations(round, umpire);
         for (int i = 0; i < umpire-1; i++){ //checks if an umpire isn't assigned to a match in the same round
@@ -109,9 +110,6 @@ public class BranchAndBound {
                 }
             }
         }
-        if (round == 1){
-            System.out.println();
-        }
         Iterator<MatchPair> iterator = feasibleAllocations.iterator();
         while (iterator.hasNext()) {
             MatchPair mp = iterator.next();
@@ -119,6 +117,13 @@ public class BranchAndBound {
                 iterator.remove();
             }
         }
+        int previousHomeTeamLocation = assignmentMatrix.getSolutionMatrix()[round][umpire-1].getHomeTeam() -1;
+        feasibleAllocations.sort((mp1, mp2) -> {
+            int distance1 = assignmentMatrix.getDistance(previousHomeTeamLocation, mp1.getHomeTeam()-1);
+            int distance2 = assignmentMatrix.getDistance(previousHomeTeamLocation, mp2.getHomeTeam()-1);
+            return Integer.compare(distance1, distance2);
+        });
+
         return feasibleAllocations;
     }
 
