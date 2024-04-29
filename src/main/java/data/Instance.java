@@ -40,9 +40,9 @@ public class Instance {
             br.readLine(); // Skip line
             // Read opponents matrix
             for (int i = 0; i < nTeams * 2 - 2; i++) {
-                line = br.readLine();
-                line = line.substring(2, line.length() - 1);
-                String[] values = line.trim().split("\\s+");
+                line = br.readLine().replace("[", "").replace("]", "").trim();
+                String[] values = line.trim().replace("]", "").split("\\s+");
+
                 for (int j = 0; j < nTeams; j++) {
                     opponents[i][j] = Integer.parseInt(values[j]);
                 }
