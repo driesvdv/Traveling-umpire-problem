@@ -8,14 +8,16 @@ public class Instance {
     private int[][] opponents;
 
     public Instance() {
-        String fileName = "src/instances/umps8.txt"; // Change this to your file path
+        String fileName = "src/instances/umps12.txt"; // Change this to your file path
 
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             String line;
             // Read nTeams
             br.readLine(); // Skip first line
             line = br.readLine();
-            nTeams = Integer.parseInt(line.split("=")[1].trim().substring(0, 1));
+            String str = line.split("=")[1];
+            nTeams = Integer.parseInt(str.substring(0,str.length()-1));
+            //nTeams = Integer.parseInt(line.split("=")[1]);
 
             // Initialize arrays
             dist = new int[nTeams][nTeams];

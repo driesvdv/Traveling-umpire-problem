@@ -1,3 +1,4 @@
+
 nTeams=12;
 
 dist=[
