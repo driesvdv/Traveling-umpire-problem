@@ -8,6 +8,8 @@ import objects.SolutionConverter;
 
 public class Main {
     public static void main(String[] args) {
+        long startTime = System.currentTimeMillis();
+
         Instance instance = new Instance();
         AssignmentMatrix assignmentMatrix = new AssignmentMatrix(instance);
 //        Preprocessing p = new Preprocessing(instance.getOpponents(), 1,3, assignmentMatrix.getTranslationMatrix());
@@ -36,11 +38,14 @@ public class Main {
             //System.out.println();
         }
 
+        long endTime = System.currentTimeMillis();
+
+
 
         SolutionConverter c = new SolutionConverter(assignmentMatrix.getSolutionMatrix(), assignmentMatrix.getTranslationMatrix());
         c.printSolution(c.convertSolutionMatrixMultipleLines());
 
-
+        System.out.println("Execution time: " + (endTime - startTime) + "ms");
         System.out.println("Finished");
     }
 }
