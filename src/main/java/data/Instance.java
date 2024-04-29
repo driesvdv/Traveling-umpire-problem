@@ -8,7 +8,7 @@ public class Instance {
     private int[][] opponents;
 
     public Instance() {
-        String fileName = "src/instances/umps12.txt"; // Change this to your file path
+        String fileName = "src/instances/umps10.txt"; // Change this to your file path
 
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             String line;
@@ -41,7 +41,7 @@ public class Instance {
             // Read opponents matrix
             for (int i = 0; i < nTeams * 2 - 2; i++) {
                 line = br.readLine().replace("[", "").replace("]", "").trim();
-                String[] values = line.trim().replace("]", "").split("\\s+");
+                String[] values = line.trim().split("\\s+");
 
                 for (int j = 0; j < nTeams; j++) {
                     opponents[i][j] = Integer.parseInt(values[j]);
@@ -50,8 +50,6 @@ public class Instance {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        System.out.println("nTeams: " + nTeams);
     }
 
     public int getnTeams() {

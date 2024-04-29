@@ -43,7 +43,6 @@ public class Preprocessing {
                 }
             }
         }
-        System.out.println();
     }
     public boolean checkMatchesForSameTeams(MatchPair m1, MatchPair m2){
         if (m1.getHomeTeam() == m2.getHomeTeam() || m1.getHomeTeam() == m2.getOutTeam()){

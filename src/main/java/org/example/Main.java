@@ -17,13 +17,13 @@ public class Main {
         BranchAndBound branchAndBound = new BranchAndBound(assignmentMatrix);
         branchAndBound.executeBranchAndBound();
 
-        System.out.println("debug");
+        //System.out.println("debug");
         for (int i = 0; i < assignmentMatrix.getnUmpires(); i++){
-            System.out.println("Umpire " + i);
+            //System.out.println("Umpire " + i);
             int[] homeTeams = new int[instance.getnTeams()];
             for (int j = 0; j < assignmentMatrix.getnRounds(); j++){
                 homeTeams[assignmentMatrix.getSolutionMatrix()[j][i].getHomeTeam()-1]++;
-                System.out.print(assignmentMatrix.getSolutionMatrix()[j][i] + " ");
+                //System.out.print(assignmentMatrix.getSolutionMatrix()[j][i] + " ");
             }
             int counter = 0;
             for (int team : homeTeams){
@@ -32,9 +32,9 @@ public class Main {
                 }
             }
             if (counter != instance.getnTeams()){
-                System.out.println("Not all teams have been assigned to umpire " + i);
+                //System.out.println("Not all teams have been assigned to umpire " + i);
             }
-            System.out.println();
+            //System.out.println();
         }
 
         long endTime = System.currentTimeMillis();

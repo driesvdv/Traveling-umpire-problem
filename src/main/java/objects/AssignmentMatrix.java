@@ -37,7 +37,7 @@ public class AssignmentMatrix {
     private MatchPair[][] translationMatrix;
 
     public AssignmentMatrix(Instance instance) {
-        q1 = 7;
+        q1 = 5;
         q2 = 2;
         nRounds = instance.getnTeams() * 2 - 2;
 
@@ -119,7 +119,7 @@ private void initTranslationMatrix(Instance inst) {
             }
         }
     }
-    System.out.println();
+    //System.out.println();
 }
 
     /**
