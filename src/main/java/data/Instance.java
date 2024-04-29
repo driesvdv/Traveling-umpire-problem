@@ -15,7 +15,9 @@ public class Instance {
             // Read nTeams
             br.readLine(); // Skip first line
             line = br.readLine();
-            nTeams = Integer.parseInt(line.split("=")[1].trim().replace(";", ""));
+            String str = line.split("=")[1];
+            nTeams = Integer.parseInt(str.substring(0,str.length()-1));
+            //nTeams = Integer.parseInt(line.split("=")[1]);
 
             // Initialize arrays
             dist = new int[nTeams][nTeams];
@@ -39,7 +41,7 @@ public class Instance {
             // Read opponents matrix
             for (int i = 0; i < nTeams * 2 - 2; i++) {
                 line = br.readLine().replace("[", "").replace("]", "").trim();
-                String[] values = line.trim().replace("]", "").split("\\s+");                
+                String[] values = line.trim().replace("]", "").split("\\s+");
 
                 for (int j = 0; j < nTeams; j++) {
                     opponents[i][j] = Integer.parseInt(values[j]);
