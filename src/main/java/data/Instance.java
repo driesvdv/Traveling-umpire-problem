@@ -8,7 +8,7 @@ public class Instance {
     private int[][] opponents;
 
     public Instance() {
-        String fileName = "src/instances/umps10.txt"; // Change this to your file path
+        String fileName = "src/instances/umps12.txt"; // Change this to your file path
 
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             String line;
@@ -48,6 +48,8 @@ public class Instance {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        System.out.println("nTeams: " + nTeams);
     }
 
     public int getnTeams() {
