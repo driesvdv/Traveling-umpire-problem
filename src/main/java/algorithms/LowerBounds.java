@@ -12,4 +12,5 @@ public class LowerBounds {
         this.solutionMatrix = new int[assignmentMatrix.getnRounds()][assignmentMatrix.getnRounds()];
         this.lowerboundsMatrix = new int[assignmentMatrix.getnRounds()][assignmentMatrix.getnRounds()];
     }
+
 }
