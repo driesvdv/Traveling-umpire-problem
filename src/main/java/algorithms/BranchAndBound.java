@@ -50,7 +50,7 @@ public class BranchAndBound {
                 }
 
                 if (round >= 12){
-                    System.out.println();
+                    //System.out.println();
                 }
                 if(!assignmentMatrix.canUmpiresVisitAllTeams(nextRound)){
                     assignmentMatrix.assignUmpireToMatch(round,umpire,null);
@@ -129,7 +129,7 @@ public class BranchAndBound {
 
     public boolean checkPreviousMatches(int round, int umpire, int q1, int q2, MatchPair mp){
         if (round == 3){
-            System.out.println();
+            //System.out.println();
         }
         for (int i = 1; i < q1; i++){
             if (round - i >=0){
@@ -144,7 +144,7 @@ public class BranchAndBound {
     public boolean checkQ2(int round, int umpire, MatchPair mp, int q2){
         for (int i = 1; i < q2; i++){
             if (round ==2){
-                System.out.println();
+                //System.out.println();
             }
             if (round - i >=0){
                 if (assignmentMatrix.getSolutionMatrix()[round-i][umpire].getHomeTeam() == mp.getHomeTeam() || assignmentMatrix.getSolutionMatrix()[round-i][umpire].getHomeTeam() == mp.getOutTeam()){

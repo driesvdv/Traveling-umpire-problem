@@ -121,7 +121,7 @@ private void initTranslationMatrix(Instance inst) {
             }
         }
     }
-    System.out.println();
+    //System.out.println();
 }
 
     /**
