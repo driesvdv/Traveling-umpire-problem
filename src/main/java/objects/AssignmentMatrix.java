@@ -25,6 +25,8 @@ public class AssignmentMatrix {
      */
     private int[][] assignmentMatrix;
     private MatchPair[][] solutionMatrix;
+    private MatchPair[][] bestSolution;
+    private int upperBound;
 
     /**
      * The weight matrix is a 2D array that represents the distance between teams.
@@ -37,7 +39,7 @@ public class AssignmentMatrix {
     private MatchPair[][] translationMatrix;
 
     public AssignmentMatrix(Instance instance) {
-        q1 = 7;
+        q1 = 4;
         q2 = 2;
         nRounds = instance.getnTeams() * 2 - 2;
 
@@ -235,5 +237,21 @@ private void initTranslationMatrix(Instance inst) {
     }
     public int getDistance(int team1, int team2){
         return weightMatrix[team1][team2];
+    }
+
+    public MatchPair[][] getBestSolution() {
+        return bestSolution;
+    }
+
+    public void setBestSolution(MatchPair[][] bestSolution) {
+        this.bestSolution = bestSolution;
+    }
+
+    public int getUpperBound() {
+        return upperBound;
+    }
+
+    public void setUpperBound(int upperBound) {
+        this.upperBound = upperBound;
     }
 }

@@ -1,6 +1,7 @@
 package org.example;
 
 import algorithms.BranchAndBound;
+import algorithms.LowerBounds;
 import data.Instance;
 import objects.AssignmentMatrix;
 import objects.Preprocessing;
@@ -15,6 +16,8 @@ public class Main {
 //        Preprocessing p = new Preprocessing(instance.getOpponents(), 1,3, assignmentMatrix.getTranslationMatrix());
 //        p.preProcessQ1andQ2();
         //assignmentMatrix.setTranslationMatrix(p.getMatchPairs());
+        //LowerBounds lb = new LowerBounds(assignmentMatrix);
+        //lb.CalculateInitialLowerBounds();
         BranchAndBound branchAndBound = new BranchAndBound(assignmentMatrix);
         branchAndBound.executeBranchAndBound();
 

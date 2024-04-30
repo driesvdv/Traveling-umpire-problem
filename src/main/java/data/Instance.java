@@ -8,7 +8,7 @@ public class Instance {
     private int[][] opponents;
 
     public Instance() {
-        String fileName = "src/instances/umps12.txt"; // Change this to your file path
+        String fileName = "src/instances/umps8.txt"; // Change this to your file path
 
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             String line;
@@ -28,7 +28,7 @@ public class Instance {
             // Read dist matrix
             for (int i = 0; i < nTeams; i++) {
                 line = br.readLine();
-                line = line.substring(4, line.length() - 1);
+                line = line.replace("[", "").replace("]", "").trim();
                 String[] values = line.trim().split("\\s+");
                 for (int j = 0; j < nTeams; j++) {
                     dist[i][j] = Integer.parseInt(values[j]);
