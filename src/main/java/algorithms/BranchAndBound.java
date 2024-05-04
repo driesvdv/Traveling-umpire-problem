@@ -43,29 +43,31 @@ public class BranchAndBound {
         for (MatchPair mp : feasibleAllocations) {
             assignmentMatrix.assignUmpireToMatch(round, umpire, mp);
             if (!isSolutionComplete()) {
-                BranchAndBound branchAndBound = new BranchAndBound(nextUmpire, nextRound, assignmentMatrix);
-                solutions.addAll(branchAndBound.executeBranchAndBound());
+                // Save the current state
+                int currentUmpire = umpire;
+                int currentRound = round;
+                // Update the state for the next recursive call
+                umpire = nextUmpire;
+                round = nextRound;
+                solutions.addAll(executeBranchAndBound());
+                // Restore the state
+                umpire = currentUmpire;
+                round = currentRound;
                 if (!assignmentMatrix.canUmpiresVisitAllTeams(nextRound)) {
                     assignmentMatrix.assignUmpireToMatch(round, umpire, null);
                 }
             } else {
                 if (checkIfAllTeamsAreVisited()) {
-                    // Update the best weight if a new best solution is found
                     int weight = assignmentMatrix.getAssignmentsWeight();
                     if (weight < bestWeight) {
                         bestWeight = weight;
-                        bestSolution = assignmentMatrix; // Update the reference to the best solution
+                        bestSolution = assignmentMatrix;
                         System.out.println("New best solution found! Weight: " + bestWeight);
                     }
-                    // No need to add a copy, just keep a reference to the best solution found so far
                 }
                 assignmentMatrix.assignUmpireToMatch(round, umpire, null);
             }
             assignmentMatrix.assignUmpireToMatch(round, umpire, null);
-        }
-        // Add the reference to the best solution to the list of solutions
-        if (bestSolution != null) {
-            solutions.add(bestSolution);
         }
         return solutions;
     }
