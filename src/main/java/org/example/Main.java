@@ -13,6 +13,8 @@ public class Main {
         AssignmentMatrix assignmentMatrix = new AssignmentMatrix(instance);
         BranchAndBound branchAndBound = new BranchAndBound(assignmentMatrix);
         branchAndBound.executeBranchAndBound();
+        
+        int upperBound = assignmentMatrix.getAssignmentsWeight();
 
         for (int i = 0; i < assignmentMatrix.getnUmpires(); i++){
             int[] homeTeams = new int[instance.getnTeams()];
@@ -26,6 +28,7 @@ public class Main {
                 }
             }
             if (counter != instance.getnTeams()){
+                
             }
         }
 
@@ -36,5 +39,10 @@ public class Main {
 
         System.out.println("Execution time: " + (endTime - startTime) + "ms");
         System.out.println("Finished");
+
+        System.out.println();
+
+        System.out.println("Upper bound:");
+        System.out.println(upperBound);
     }
 }

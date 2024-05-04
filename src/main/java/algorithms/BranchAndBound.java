@@ -3,6 +3,7 @@ package algorithms;
 import objects.AssignmentMatrix;
 import objects.MatchPair;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -11,72 +12,66 @@ public class BranchAndBound {
     private int umpire;
     private int round;
     private AssignmentMatrix assignmentMatrix;
-    // private MatchPair[][] solution;
     private int amountOfUmpires;
     private int amountOfRounds;
+    private int upperBound = Integer.MAX_VALUE;
+    private int bestWeight = Integer.MAX_VALUE; // Variable to store the weight of the best solution found so far
+    private AssignmentMatrix bestSolution; // Reference to the best solution found so far
 
-    // Define upper and lower bounds
-    private int upperBound;
-    private int lowerBound;
 
     public BranchAndBound(AssignmentMatrix assignmentMatrix) {
         this.umpire = 1;
         this.round = 1;
         this.assignmentMatrix = assignmentMatrix;
-        amountOfUmpires = assignmentMatrix.getnUmpires();
-        amountOfRounds = assignmentMatrix.getnRounds();
-
+        this.amountOfUmpires = assignmentMatrix.getnUmpires();
+        this.amountOfRounds = assignmentMatrix.getnRounds();
     }
 
     public BranchAndBound(int umpire, int round, AssignmentMatrix assignmentMatrix) {
         this.umpire = umpire;
         this.round = round;
         this.assignmentMatrix = assignmentMatrix;
-        amountOfUmpires = assignmentMatrix.getnUmpires();
-        amountOfRounds = assignmentMatrix.getnRounds();
+        this.amountOfUmpires = assignmentMatrix.getnUmpires();
+        this.amountOfRounds = assignmentMatrix.getnRounds();
     }
 
-    /**
-     * Executes the branch and bound algorithm
-     * 
-     * @return boolean
-     *         The assignmentMatrix.assignUmpireToMatch(round,umpire,null); need to
-     *         happen before the return false statement.
-     *         This is because we only check if an match has been assigned to a
-     *         previous umpire.
-     **/
-    public boolean executeBranchAndBound() {
+    public List<AssignmentMatrix> executeBranchAndBound() {
+        List<AssignmentMatrix> solutions = new ArrayList<>();
         int nextUmpire = (umpire % amountOfUmpires) + 1;
         int nextRound = ((umpire == assignmentMatrix.getN()) ? round + 1 : round);
-        List<MatchPair> feasibleAllcations = getFeasibleAllocations(round - 1, umpire, assignmentMatrix.getQ1(),
-                assignmentMatrix.getQ2());
-        for (MatchPair mp : feasibleAllcations) {
+        List<MatchPair> feasibleAllocations = getFeasibleAllocations(round - 1, umpire, assignmentMatrix.getQ1(), assignmentMatrix.getQ2());
+        for (MatchPair mp : feasibleAllocations) {
             assignmentMatrix.assignUmpireToMatch(round, umpire, mp);
-            if (!solutionIsComplete(assignmentMatrix)) {
+            if (!isSolutionComplete()) {
                 BranchAndBound branchAndBound = new BranchAndBound(nextUmpire, nextRound, assignmentMatrix);
-                if (branchAndBound.executeBranchAndBound()) {
-                    return true;
-                }
-
+                solutions.addAll(branchAndBound.executeBranchAndBound());
                 if (!assignmentMatrix.canUmpiresVisitAllTeams(nextRound)) {
                     assignmentMatrix.assignUmpireToMatch(round, umpire, null);
-                    return false;
                 }
             } else {
-                // TODO add local search
                 if (checkIfAllTeamsAreVisited()) {
-                    return true;
+                    // Update the best weight if a new best solution is found
+                    int weight = assignmentMatrix.getAssignmentsWeight();
+                    if (weight < bestWeight) {
+                        bestWeight = weight;
+                        bestSolution = assignmentMatrix; // Update the reference to the best solution
+                        System.out.println("New best solution found! Weight: " + bestWeight);
+                    }
+                    // No need to add a copy, just keep a reference to the best solution found so far
                 }
                 assignmentMatrix.assignUmpireToMatch(round, umpire, null);
-                return false;
             }
             assignmentMatrix.assignUmpireToMatch(round, umpire, null);
         }
-        return false;
+        // Add the reference to the best solution to the list of solutions
+        if (bestSolution != null) {
+            solutions.add(bestSolution);
+        }
+        return solutions;
     }
 
-    public boolean solutionIsComplete(AssignmentMatrix assignmentMatrix) {
-        // only check current round and next round
+
+    public boolean isSolutionComplete() {
         if (round == amountOfRounds - 1) {
             for (int i = 0; i < amountOfUmpires; i++) {
                 if (assignmentMatrix.getSolutionMatrix()[round][i] == null) {
@@ -84,9 +79,8 @@ public class BranchAndBound {
                 }
             }
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     public boolean checkIfAllTeamsAreVisited() {
@@ -94,12 +88,9 @@ public class BranchAndBound {
             boolean[] visited = new boolean[assignmentMatrix.getnTeams()];
             for (int j = 0; j < amountOfRounds; j++) {
                 int team1 = assignmentMatrix.getSolutionMatrix()[j][i].getHomeTeam();
-                visited[team1 - 1] = true; // Subtract 1 because teams are 1-indexed
+                visited[team1 - 1] = true;
             }
-
-            int unvisitedTeams = (int) IntStream.range(0, assignmentMatrix.getnTeams()).filter(x -> !visited[x])
-                    .count();
-
+            int unvisitedTeams = (int) IntStream.range(0, assignmentMatrix.getnTeams()).filter(x -> !visited[x]).count();
             if (unvisitedTeams != 0) {
                 return false;
             }
@@ -107,11 +98,9 @@ public class BranchAndBound {
         return true;
     }
 
-    // Volgens de paper zal de volgende toewijzing telkens die zijn met de kortste
-    // afstand. Er zal dus telkens op afstand gesorteerd moeten worden.
     public List<MatchPair> getFeasibleAllocations(int round, int umpire, int q1, int q2) {
         List<MatchPair> feasibleAllocations = assignmentMatrix.getPossibleAllocations(round, umpire);
-        for (int i = 0; i < umpire - 1; i++) { // checks if an umpire isn't assigned to a match in the same round
+        for (int i = 0; i < umpire - 1; i++) {
             if (round + 1 < amountOfRounds) {
                 if (feasibleAllocations.contains(assignmentMatrix.getSolutionMatrix()[round + 1][i])) {
                     feasibleAllocations.remove(assignmentMatrix.getSolutionMatrix()[round + 1][i]);
@@ -131,7 +120,6 @@ public class BranchAndBound {
             int distance2 = assignmentMatrix.getDistance(previousHomeTeamLocation, mp2.getHomeTeam() - 1);
             return Integer.compare(distance1, distance2);
         });
-
         return feasibleAllocations;
     }
 
@@ -160,5 +148,5 @@ public class BranchAndBound {
         }
         return true;
     }
-
 }
+

@@ -64,8 +64,6 @@ public class AssignmentMatrix {
                 if (solutionMatrix[i][j] != null) {
                     weight += weightMatrix[solutionMatrix[i][j].getHomeTeam() - 1][solutionMatrix[i][j].getOutTeam()
                             - 1];
-                } else {
-                    throw new RuntimeException("Solution matrix is not complete");
                 }
             }
         }
@@ -103,21 +101,6 @@ public class AssignmentMatrix {
         }
     }
 
-    // private void initTranslationMatrix(Instance inst) {
-    // for (int i = 0; i < nRounds; i++) {
-    // //int[] controleMatrix = new int[teams];
-    // int counter = 0;
-    // for (int j = 0; j < nTeams; j++) {
-    // int team1 = inst.getOpponents()[i][j];
-    // if (team1 > 0){
-    // int team2 = inst.getOpponents()[i][Math.abs(team1)-1];
-    // var test = new MatchPair(team1, team2);
-    // translationMatrix[i][counter] = test;//tmp; //Klopt niet bij j groter dan 4
-    // counter++;
-    // }
-    // }
-    // }
-    // }
     private void initTranslationMatrix(Instance inst) {
         for (int i = 0; i < nRounds; i++) {
             List<Integer> teams = new ArrayList<>();
@@ -134,7 +117,6 @@ public class AssignmentMatrix {
                 }
             }
         }
-        // System.out.println();
     }
 
     /**
@@ -168,25 +150,6 @@ public class AssignmentMatrix {
 
         return true;
     }
-    // public boolean canUmpiresVisitAllTeams(int currentRound) {
-    // for (int i=0; i<nUmpires; i++) {
-    // boolean[] visited = new boolean[nTeams];
-    // for (int j=0; j<currentRound; j++) {
-    // int team1 = solutionMatrix[j][i].getHomeTeam();
-    // visited[team1 - 1] = true; // Subtract 1 because teams are 1-indexed
-    // }
-    //
-    // int unvisitedTeams = (int) IntStream.range(0, nTeams).filter(x ->
-    // !visited[x]).count();
-    //
-    // // todo: debug this later to make sure there are no off by one errors
-    // if (unvisitedTeams > nRounds - currentRound) {
-    // return false;
-    // }
-    // }
-    //
-    // return true;
-    // }
 
     /**
      * Returns true if all empires have only one match per round and thus no double
