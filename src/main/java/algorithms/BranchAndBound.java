@@ -35,11 +35,11 @@ public class BranchAndBound {
         this.amountOfRounds = assignmentMatrix.getnRounds();
     }
 
-    public List<AssignmentMatrix> executeBranchAndBound() {
-        List<AssignmentMatrix> solutions = new ArrayList<>();
+    public AssignmentMatrix executeBranchAndBound() {
         int nextUmpire = (umpire % amountOfUmpires) + 1;
         int nextRound = ((umpire == assignmentMatrix.getN()) ? round + 1 : round);
         List<MatchPair> feasibleAllocations = getFeasibleAllocations(round - 1, umpire, assignmentMatrix.getQ1(), assignmentMatrix.getQ2());
+
         for (MatchPair mp : feasibleAllocations) {
             assignmentMatrix.assignUmpireToMatch(round, umpire, mp);
             if (!isSolutionComplete()) {
@@ -49,13 +49,13 @@ public class BranchAndBound {
                 // Update the state for the next recursive call
                 umpire = nextUmpire;
                 round = nextRound;
-                solutions.addAll(executeBranchAndBound());
+                executeBranchAndBound();
                 // Restore the state
                 umpire = currentUmpire;
                 round = currentRound;
-                if (!assignmentMatrix.canUmpiresVisitAllTeams(nextRound)) {
-                    assignmentMatrix.assignUmpireToMatch(round, umpire, null);
-                }
+                //if (!assignmentMatrix.canUmpiresVisitAllTeams(nextRound)) { REDUNDANT CODE
+                //    assignmentMatrix.assignUmpireToMatch(round, umpire, null);
+                //}
             } else {
                 if (checkIfAllTeamsAreVisited()) {
                     int weight = assignmentMatrix.getAssignmentsWeight();
@@ -65,11 +65,11 @@ public class BranchAndBound {
                         System.out.println("New best solution found! Weight: " + bestWeight);
                     }
                 }
-                assignmentMatrix.assignUmpireToMatch(round, umpire, null);
+                // assignmentMatrix.assignUmpireToMatch(round, umpire, null); REDUNDANT
             }
             assignmentMatrix.assignUmpireToMatch(round, umpire, null);
         }
-        return solutions;
+        return bestSolution;
     }
 
 
