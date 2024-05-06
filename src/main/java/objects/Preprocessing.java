@@ -53,6 +53,7 @@ public class Preprocessing {
         }
         return true;
     }
+    
     public MatchPair[][] getMatchPairs(){
         return this.matchPairs;
     }

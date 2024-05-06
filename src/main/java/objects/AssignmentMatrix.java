@@ -16,6 +16,9 @@ public class AssignmentMatrix {
     private int q2;
     private int n;
 
+    private MatchPair[][] bestSolution;
+    private int bestWeight;
+
     /**
      * The assignment matrix is a 2D array that represents the assignment of umpires
      * to games.
@@ -25,8 +28,6 @@ public class AssignmentMatrix {
      */
     private int[][] assignmentMatrix;
     private MatchPair[][] solutionMatrix;
-    private MatchPair[][] bestSolution;
-    private int upperBound;
 
     /**
      * The weight matrix is a 2D array that represents the distance between teams.
@@ -45,13 +46,13 @@ public class AssignmentMatrix {
 
         nUmpires = instance.getnTeams() / 2;
         nTeams = instance.getnTeams();
-        n = nTeams/2;
-        upperBound = Integer.MAX_VALUE;
+        n = nTeams / 2;
 
         assignmentMatrix = new int[nRounds][nUmpires];
         weightMatrix = new int[nTeams][nTeams];
         translationMatrix = new MatchPair[nRounds][nUmpires];
         solutionMatrix = new MatchPair[nRounds][nUmpires];
+        bestSolution = new MatchPair[nRounds][nUmpires];
         initTranslationMatrix(instance);
         initAssignMentMatrix();
         initWeightMatrix(instance);
@@ -60,14 +61,27 @@ public class AssignmentMatrix {
         System.out.println("debug");
     }
 
-    public void preprocessMatches(){
-        Preprocessing preprocesser = new Preprocessing(this.assignmentMatrix, q1,q2, translationMatrix);
+    public int getAssignmentsWeight() {
+        int weight = 0;
+        for (int i = 0; i < nRounds - 1; i++) {
+            for (int j = 0; j < nUmpires; j++) {
+                if (solutionMatrix[i][j] != null && solutionMatrix[i+1][j] != null) {
+                    weight += weightMatrix[solutionMatrix[i][j].getHomeTeam() - 1][solutionMatrix[i+1][j].getHomeTeam()
+                            - 1];
+                }
+            }
+        }
+        return weight;
+    }
+
+    public void preprocessMatches() {
+        Preprocessing preprocesser = new Preprocessing(this.assignmentMatrix, q1, q2, translationMatrix);
         preprocesser.preProcessQ1andQ2();
         this.translationMatrix = preprocesser.getMatchPairs();
     }
 
-    //Todo make this with MatchPairs
-    private void initAssignMentMatrix(){
+    // Todo make this with MatchPairs
+    private void initAssignMentMatrix() {
         for (int i = 0; i < nRounds; i++) {
             for (int j = 0; j < nUmpires; j++) {
                 if (i == 0) {
@@ -91,101 +105,47 @@ public class AssignmentMatrix {
         }
     }
 
-    public int getAssignmentsWeight() {
-        int weight = 0;
+    private void initTranslationMatrix(Instance inst) {
         for (int i = 0; i < nRounds; i++) {
-            for (int j = 0; j < nUmpires; j++) {
-                if (solutionMatrix[i][j] != null) {
-                    weight += weightMatrix[solutionMatrix[i][j].getHomeTeam() - 1][solutionMatrix[i][j].getOutTeam()
-                            - 1];
-                } else {
-                    throw new RuntimeException("Solution matrix is not complete");
+            List<Integer> teams = new ArrayList<>();
+            int counter = 0;
+            for (int j = 0; j < nTeams; j++) {
+                if (!teams.contains(Math.abs(inst.getOpponents()[i][j]))) {
+                    int team1 = inst.getOpponents()[i][j];
+                    int team2 = inst.getOpponents()[i][Math.abs(team1) - 1];
+                    teams.add(Math.abs(team1));
+                    teams.add(Math.abs(team2));
+                    var test = new MatchPair(team1, team2);
+                    translationMatrix[i][counter] = test;// tmp; //Klopt niet bij j groter dan 4
+                    counter++;
                 }
             }
         }
-        return weight;
     }
-    public int getTotalDistanceTravelled() {
-        int totalDistance = 0;
-        for (int i = 0; i < nRounds-1; i++) {
-            for (int j = 0; j < nUmpires; j++) {
-                if (solutionMatrix[i][j] != null) {
-                    totalDistance += weightMatrix[solutionMatrix[i][j].getHomeTeam() - 1][solutionMatrix[i+1][j].getHomeTeam() - 1];
-                } else {
-                    throw new RuntimeException("Solution matrix is not complete");
-                }
-            }
-        }
-        return totalDistance;
-    }
-
-private void initTranslationMatrix(Instance inst) {
-    for (int i = 0; i < nRounds; i++) {
-        List<Integer> teams = new ArrayList<>();
-        int counter = 0;
-        for (int j = 0; j < nTeams; j++) {
-            if (!teams.contains(Math.abs(inst.getOpponents()[i][j]))){
-                int team1 = inst.getOpponents()[i][j];
-                int team2 = inst.getOpponents()[i][Math.abs(team1)-1];
-                teams.add(Math.abs(team1));
-                teams.add(Math.abs(team2));
-                var test = new MatchPair(team1, team2);
-                translationMatrix[i][counter] = test;//tmp; //Klopt niet bij j groter dan 4
-                counter++;
-            }
-        }
-    }
-    //System.out.println();
-}
 
     /**
-     * Can the umpire still visit each distinct team location at least once?
+     * Can the umpire still visit each distinct hometeah at least once?
      *
      * @return false if umpire can't visit all teams anymore
      * @return true if solution is valid
      */
     public boolean canUmpiresVisitAllTeams(int currentRound) {
-        for (int i=0; i<nUmpires; i++) {
+        int roundsLeft = nRounds - currentRound;
+        for (int i = 0; i < nUmpires; i++) {
             boolean[] visited = new boolean[nTeams];
-            for (int j=0; j<nRounds; j++) {
-                int team1 = translationMatrix[j][i].getHomeTeam();
-                int team2 = translationMatrix[j][i].getOutTeam();
-                visited[team1 - 1] = true; // Subtract 1 because teams are 1-indexed
-                //visited[team2 - 1] = true; // Subtract 1 because teams are 1-indexed // Het gaat toch om de thuislocaties bezoeken? uit team maakt dan toch niet uit?
+            for (int j = 0; j <= currentRound; j++) {
+                if (solutionMatrix[j][i] != null) {
+                    int team1 = solutionMatrix[j][i].getHomeTeam();
+                    visited[team1 - 1] = true;
+                }
             }
-
             int unvisitedTeams = (int) IntStream.range(0, nTeams).filter(x -> !visited[x]).count();
-
-            if (nRounds - currentRound < 0) {
-                throw new RuntimeException("Current round is negative");
-            }
-
-            // todo: debug this later to make sure there are no off by one errors
-            if (unvisitedTeams > nRounds - currentRound) {
+            if (unvisitedTeams > roundsLeft) {
                 return false;
             }
         }
-
         return true;
     }
-//    public boolean canUmpiresVisitAllTeams(int currentRound) {
-//        for (int i=0; i<nUmpires; i++) {
-//            boolean[] visited = new boolean[nTeams];
-//            for (int j=0; j<currentRound; j++) {
-//                int team1 = solutionMatrix[j][i].getHomeTeam();
-//                visited[team1 - 1] = true; // Subtract 1 because teams are 1-indexed
-//            }
-//
-//            int unvisitedTeams = (int) IntStream.range(0, nTeams).filter(x -> !visited[x]).count();
-//
-//            // todo: debug this later to make sure there are no off by one errors
-//            if (unvisitedTeams > nRounds - currentRound) {
-//                return false;
-//            }
-//        }
-//
-//        return true;
-//    }
 
     /**
      * Returns true if all empires have only one match per round and thus no double
@@ -225,12 +185,15 @@ private void initTranslationMatrix(Instance inst) {
     public int[][] getAssignmentMatrix() {
         return assignmentMatrix;
     }
-    public int getN(){
+
+    public int getN() {
         return n;
     }
-    public List<MatchPair> getPossibleAllocations(int round, int umpire){
-        return solutionMatrix[round][umpire-1].getFeasibleChildren();
+
+    public List<MatchPair> getPossibleAllocations(int round, int umpire) {
+        return solutionMatrix[round][umpire - 1].getFeasibleChildren();
     }
+
     public void setTranslationMatrix(MatchPair[][] translationMatrix) {
         this.translationMatrix = translationMatrix;
     }
@@ -238,8 +201,9 @@ private void initTranslationMatrix(Instance inst) {
     public MatchPair[][] getSolutionMatrix() {
         return solutionMatrix;
     }
-    public void assignUmpireToMatch(int round, int umpire, MatchPair match){
-        solutionMatrix[round][umpire-1] = match;
+
+    public void assignUmpireToMatch(int round, int umpire, MatchPair match) {
+        solutionMatrix[round][umpire - 1] = match;
     }
 
     public int getQ1() {
@@ -249,27 +213,30 @@ private void initTranslationMatrix(Instance inst) {
     public int getQ2() {
         return q2;
     }
-    public int getDistance(int team1, int team2){
+
+    public int getDistance(int team1, int team2) {
         return weightMatrix[team1][team2];
+    }
+
+    public void setBestSolution(MatchPair[][] bestSolution) {
+        this.bestSolution = new MatchPair[nRounds][nUmpires];
+        for (int i = 0; i < nRounds; i++) {
+            for (int j = 0; j < nUmpires; j++) {
+                this.bestSolution[i][j] = bestSolution[i][j];
+            }
+        }
     }
 
     public MatchPair[][] getBestSolution() {
         return bestSolution;
     }
 
-    public void setBestSolution(MatchPair[][] bestSolution) {
-        this.bestSolution = new MatchPair[bestSolution.length][];
-        for (int i = 0; i < bestSolution.length; i++) {
-            this.bestSolution[i] = new MatchPair[bestSolution[i].length];
-            System.arraycopy(bestSolution[i], 0, this.bestSolution[i], 0, bestSolution[i].length);
-        }
+    public void setBestWeight(int bestWeight) {
+        this.bestWeight = bestWeight;
     }
 
-    public int getUpperBound() {
-        return upperBound;
-    }
+    public int getBestWeight() {
+        return bestWeight;
 
-    public void setUpperBound(int upperBound) {
-        this.upperBound = upperBound;
     }
 }
