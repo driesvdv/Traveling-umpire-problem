@@ -14,7 +14,7 @@ public class Main {
         BranchAndBound branchAndBound = new BranchAndBound(assignmentMatrix);
         AssignmentMatrix bestSolution = branchAndBound.executeBranchAndBound();
 
-
+        long endTime = System.currentTimeMillis();
         
         // Print optimal weight value
         System.out.println("\nSolution:");
@@ -31,21 +31,13 @@ public class Main {
                     counter++;
                 }
             }
-            if (counter != instance.getnTeams()){
-                
-            }
         }
-
-        long endTime = System.currentTimeMillis();
-
-        SolutionConverter c = new SolutionConverter(assignmentMatrix.getBestSolution(), assignmentMatrix.getTranslationMatrix());
-        c.printSolution(c.convertSolutionMatrixMultipleLines());
 
         System.out.println("Execution time: " + (endTime - startTime) + "ms");
         System.out.println("Finished");
 
-        System.out.println();
-
-        System.out.println("Upper bound:");
+        System.out.println("\nFull solution:");
+        SolutionConverter c = new SolutionConverter(assignmentMatrix.getBestSolution(), assignmentMatrix.getTranslationMatrix());
+        c.printSolution(c.convertSolutionMatrixMultipleLines());
     }
 }
