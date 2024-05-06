@@ -16,6 +16,9 @@ public class AssignmentMatrix {
     private int q2;
     private int n;
 
+    private MatchPair[][] bestSolution;
+    private int bestWeight;
+
     /**
      * The assignment matrix is a 2D array that represents the assignment of umpires
      * to games.
@@ -49,6 +52,7 @@ public class AssignmentMatrix {
         weightMatrix = new int[nTeams][nTeams];
         translationMatrix = new MatchPair[nRounds][nUmpires];
         solutionMatrix = new MatchPair[nRounds][nUmpires];
+        bestSolution = new MatchPair[nRounds][nUmpires];
         initTranslationMatrix(instance);
         initAssignMentMatrix();
         initWeightMatrix(instance);
@@ -59,10 +63,10 @@ public class AssignmentMatrix {
 
     public int getAssignmentsWeight() {
         int weight = 0;
-        for (int i = 0; i < nRounds; i++) {
+        for (int i = 0; i < nRounds - 1; i++) {
             for (int j = 0; j < nUmpires; j++) {
                 if (solutionMatrix[i][j] != null) {
-                    weight += weightMatrix[solutionMatrix[i][j].getHomeTeam() - 1][solutionMatrix[i][j].getOutTeam()
+                    weight += weightMatrix[solutionMatrix[i][j].getHomeTeam() - 1][solutionMatrix[i+1][j].getHomeTeam()
                             - 1];
                 }
             }
@@ -220,5 +224,27 @@ public class AssignmentMatrix {
 
     public int getDistance(int team1, int team2) {
         return weightMatrix[team1][team2];
+    }
+
+    public void setBestSolution(MatchPair[][] bestSolution) {
+        // Deep copy the best solution
+        this.bestSolution = new MatchPair[nRounds][nUmpires];
+        for (int i = 0; i < nRounds; i++) {
+            for (int j = 0; j < nUmpires; j++) {
+                this.bestSolution[i][j] = bestSolution[i][j];
+            }
+        }
+    }
+
+    public MatchPair[][] getBestSolution() {
+        return bestSolution;
+    }
+
+    public void setBestWeight(int bestWeight) {
+        this.bestWeight = bestWeight;
+    }
+
+    public int getBestWeight() {
+        return bestWeight;
     }
 }

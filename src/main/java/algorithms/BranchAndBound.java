@@ -63,6 +63,9 @@ public class BranchAndBound {
                         bestWeight = weight;
                         bestSolution = assignmentMatrix;
                         System.out.println("New best solution found! Weight: " + bestWeight);
+                        assignmentMatrix.setBestSolution(assignmentMatrix.getSolutionMatrix());
+                        assignmentMatrix.setBestWeight(bestWeight);
+
                     }
                 }
                 // assignmentMatrix.assignUmpireToMatch(round, umpire, null); REDUNDANT
@@ -151,4 +154,20 @@ public class BranchAndBound {
         return true;
     }
 }
+
+
+// package algorithms;
+
+// public class BranchAndBound {
+//     int[][] bestSolution;
+
+//     /**
+//      * Constructor for the BranchAndBound class
+//      *
+//      * Input Solution S, umpire u and round r
+//      */
+//     public BranchAndBound(int[][] solution, int umpire, int round) {
+        
+//     }
+// }
 
