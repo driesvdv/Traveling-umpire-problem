@@ -27,14 +27,6 @@ public class BranchAndBound {
         this.amountOfRounds = assignmentMatrix.getnRounds();
     }
 
-    public BranchAndBound(int umpire, int round, AssignmentMatrix assignmentMatrix) {
-        this.umpire = umpire;
-        this.round = round;
-        this.assignmentMatrix = assignmentMatrix;
-        this.amountOfUmpires = assignmentMatrix.getnUmpires();
-        this.amountOfRounds = assignmentMatrix.getnRounds();
-    }
-
     public AssignmentMatrix executeBranchAndBound() {
         int nextUmpire = (umpire % amountOfUmpires) + 1;
         int nextRound = ((umpire == assignmentMatrix.getN()) ? round + 1 : round);
