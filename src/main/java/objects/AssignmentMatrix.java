@@ -28,8 +28,6 @@ public class AssignmentMatrix {
      */
     private int[][] assignmentMatrix;
     private MatchPair[][] solutionMatrix;
-    private MatchPair[][] bestSolution;
-    private int upperBound;
 
     /**
      * The weight matrix is a 2D array that represents the distance between teams.
