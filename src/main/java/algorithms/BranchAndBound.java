@@ -14,8 +14,10 @@ public class BranchAndBound {
     private AssignmentMatrix assignmentMatrix;
     private int amountOfUmpires;
     private int amountOfRounds;
+
+    private int lowerBound = 0;
     private int upperBound = Integer.MAX_VALUE;
-    private int bestWeight = Integer.MAX_VALUE; // Variable to store the weight of the best solution found so far
+
     private AssignmentMatrix bestSolution; // Reference to the best solution found so far
 
 
@@ -41,7 +43,10 @@ public class BranchAndBound {
                 // Update the state for the next recursive call
                 umpire = nextUmpire;
                 round = nextRound;
-                if (assignmentMatrix.getAssignmentsWeight() < bestWeight) {
+                if (assignmentMatrix.getAssignmentsWeight() < upperBound
+                //&& assignmentMatrix.canUmpiresVisitAllTeams(currentRound) // Faster without this check
+                )
+                {
                     executeBranchAndBound();
                 }
                 // Restore the state
@@ -50,12 +55,12 @@ public class BranchAndBound {
             } else {
                 if (checkIfAllTeamsAreVisited()) {
                     int weight = assignmentMatrix.getAssignmentsWeight();
-                    if (weight < bestWeight) {
-                        bestWeight = weight;
+                    if (weight < upperBound) {
+                        upperBound = weight;
                         bestSolution = assignmentMatrix;
-                        System.out.println("New best solution found! Weight: " + bestWeight);
+                        System.out.println("New best solution found! Weight: " + upperBound);
                         assignmentMatrix.setBestSolution(assignmentMatrix.getSolutionMatrix());
-                        assignmentMatrix.setBestWeight(bestWeight);
+                        assignmentMatrix.setBestWeight(upperBound);
 
                     }
                 }

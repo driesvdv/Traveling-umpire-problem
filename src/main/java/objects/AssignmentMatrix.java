@@ -124,34 +124,26 @@ public class AssignmentMatrix {
     }
 
     /**
-     * Can the umpire still visit each distinct team location at least once?
+     * Can the umpire still visit each distinct hometeah at least once?
      *
      * @return false if umpire can't visit all teams anymore
      * @return true if solution is valid
      */
     public boolean canUmpiresVisitAllTeams(int currentRound) {
+        int roundsLeft = nRounds - currentRound;
         for (int i = 0; i < nUmpires; i++) {
             boolean[] visited = new boolean[nTeams];
-            for (int j = 0; j < nRounds; j++) {
-                int team1 = translationMatrix[j][i].getHomeTeam();
-                int team2 = translationMatrix[j][i].getOutTeam();
-                visited[team1 - 1] = true; // Subtract 1 because teams are 1-indexed
-                // visited[team2 - 1] = true; // Subtract 1 because teams are 1-indexed // Het
-                // gaat toch om de thuislocaties bezoeken? uit team maakt dan toch niet uit?
+            for (int j = 0; j <= currentRound; j++) {
+                if (solutionMatrix[j][i] != null) {
+                    int team1 = solutionMatrix[j][i].getHomeTeam();
+                    visited[team1 - 1] = true;
+                }
             }
-
             int unvisitedTeams = (int) IntStream.range(0, nTeams).filter(x -> !visited[x]).count();
-
-            if (nRounds - currentRound < 0) {
-                throw new RuntimeException("Current round is negative");
-            }
-
-            // todo: debug this later to make sure there are no off by one errors
-            if (unvisitedTeams > nRounds - currentRound) {
+            if (unvisitedTeams > roundsLeft) {
                 return false;
             }
         }
-
         return true;
     }
 
@@ -227,7 +219,6 @@ public class AssignmentMatrix {
     }
 
     public void setBestSolution(MatchPair[][] bestSolution) {
-        // Deep copy the best solution
         this.bestSolution = new MatchPair[nRounds][nUmpires];
         for (int i = 0; i < nRounds; i++) {
             for (int j = 0; j < nUmpires; j++) {
