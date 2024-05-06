@@ -1,250 +1,336 @@
 package algorithms;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Queue;
 
-public class HungarianAlgorithm {
-    //https://github.com/ashishbhoi/Hungarian-Algorithm/blob/master/src/main/java/in/ac/iitdh/Hungarian.java
-    int[] rows; // Index of the column selected by every row (The final result)
-    int[] occupiedCols; // Verify that all column are occupied, used in the optimization step
-    private int[][] originalValues; // Given values
-    private int[][] values; // Cloned given values to be processed
-    private int[][] lines; // Line drawn
-    private int numLines; // Number of line drawn
 
-    public HungarianAlgorithm(int[][] matrix) {
-        // Initialization
-        originalValues = matrix; // Given matrix
-        values = cloneMatrix(matrix); // Cloned matrix to be processed
-        rows = new int[values.length];
-        occupiedCols = new int[values.length];
+class HungarianAlgorithm {
 
-        //Algorithm
-        subtractRowMinimal();                // Step 1
-        subtractColMinimal();                // Step 2
-        coverZeros();                        // Step 3
-        while (numLines < values.length) {
-            createAdditionalZeros();        // Step 4 (Condition)
-            coverZeros();                    // Step 3 Again (Condition)
-        }
-        optimization();                        // Optimization
-    }
+    final private int[][] costMatrix;
+    final private int[][] assignments;
+    final private int[] rowAssignments;
+    final private int[] colAssignments;
+    final private int nRows;
+    final private int nCols;
+    final private boolean[] coveredRows;
+    final private boolean[] coveredCols;
+    final private int[] starredRows;
+    final private int[] starredCols;
+    final private int[] primedRows;
+    final private int[] primedCols;
+    private int numberCoveredCols;
+    final private boolean transposed;
 
-    /**
-     * Step 1
-     * Subtract from every element the minimum value from its row
-     */
-    public void subtractRowMinimal() {
-        int[] rowMinValue = new int[values.length];
-        //get the minimum for each row and store in rowMinValue[]
-        for (int row = 0; row < values.length; row++) {
-            rowMinValue[row] = values[row][0];
-            for (int col = 1; col < values.length; col++) {
-                if (values[row][col] < rowMinValue[row])
-                    rowMinValue[row] = values[row][col];
+
+    public HungarianAlgorithm(int[][] costMatrix) {
+        checkMatrixValidity(costMatrix);
+        if (costMatrix.length > costMatrix[0].length){
+            //flip matrix to have more columns than rows
+            transposed = true;
+            nRows = costMatrix[0].length;
+            nCols = costMatrix.length;
+            this.costMatrix = new int[nRows][nCols];
+            for (int i = 0; i < nRows; i++) {
+                for (int j = 0; j < nCols; j++) {
+                    this.costMatrix[i][j] = costMatrix[j][i];
+                }
             }
+        } else {
+            this.costMatrix = costMatrix;
+            nRows = costMatrix.length;
+            nCols = costMatrix[0].length;
+            transposed = false;
         }
-
-        //subtract minimum from each row using rowMinValue[]
-        for (int row = 0; row < values.length; row++) {
-            for (int col = 0; col < values.length; col++) {
-                values[row][col] -= rowMinValue[row];
-            }
-        }
-    } //End Step 1
-
-    /**
-     * Step 2
-     * Subtract from every element the minimum value from its column
-     */
-    public void subtractColMinimal() {
-        int colMinValue[] = new int[values.length];
-        //get the minimum for each column and store them in colMinValue[]
-        for (int col = 0; col < values.length; col++) {
-            colMinValue[col] = values[0][col];
-            for (int row = 1; row < values.length; row++) {
-                if (values[row][col] < colMinValue[col])
-                    colMinValue[col] = values[row][col];
-            }
-        }
-
-        //subtract minimum from each column using colMinValue[]
-        for (int col = 0; col < values.length; col++) {
-            for (int row = 0; row < values.length; row++) {
-                values[row][col] -= colMinValue[col];
-            }
-        }
-    } //End Step 2
-
-    /**
-     * Step 3.1
-     * Loop through all elements, and run colorNeighbors when the element visited is equal to zero
-     */
-    public void coverZeros() {
-        numLines = 0;
-        lines = new int[values.length][values.length];
-
-        for (int row = 0; row < values.length; row++) {
-            for (int col = 0; col < values.length; col++) {
-                if (values[row][col] == 0)
-                    colorNeighbors(row, col, maxVH(row, col));
-            }
+        assignments = new int[nRows][2];
+        rowAssignments = new int[transposed ? nCols : nRows];
+        colAssignments = new int[transposed ? nRows : nCols];
+        coveredRows = new boolean[nRows];
+        coveredCols = new boolean[nCols];
+        starredRows = new int[nRows];
+        starredCols = new int[nCols];
+        primedRows = new int[nRows];
+        primedCols = new int[nCols];
+        Arrays.fill(starredRows, -1);
+        Arrays.fill(starredCols, -1);
+        Arrays.fill(primedRows, -1);
+        Arrays.fill(primedCols, -1);
+        Arrays.fill(rowAssignments, -1);
+        Arrays.fill(colAssignments, -1);
+        for (int[] assignment : assignments) {
+            Arrays.fill(assignment, -1);
         }
     }
 
-    /**
-     * Step 3.2
-     * Checks which direction (vertical,horizontal) contains more zeros, every time a zero is found vertically, we increment the result
-     * and every time a zero is found horizontally, we decrement the result. At the end, result will be negative, zero or positive
-     *
-     * @param row Row index for the target cell
-     * @param col Column index for the target cell
-     * @return Positive integer means that the line passing by indexes [row][col] should be vertical, Zero or Negative means that the line passing by indexes [row][col] should be horizontal
-     */
-    private int maxVH(int row, int col) {
-        int result = 0;
-        for (int i = 0; i < values.length; i++) {
-            if (values[i][col] == 0)
-                result++;
-            if (values[row][i] == 0)
-                result--;
-        }
+    public static HungarianAlgorithm initialise(int[][] costMatrix) {
+        HungarianAlgorithm result = new HungarianAlgorithm(costMatrix);
+        result.reduceInitialMatrix();
+        result.solveReducedMatrix();
         return result;
     }
 
     /**
-     * Step 3.3
-     * Color the neighbors of the cell at index [row][col]. To know which direction to draw the lines, we pass maxVH value.
-     *
-     * @param row   Row index for the target cell
-     * @param col   Column index for the target cell
-     * @param maxVH Value return by the maxVH method, positive means the line to draw passing by indexes [row][col] is vertical, negative or zero means the line to draw passing by indexes [row][col] is horizontal
+     * Returns the column index assigned to each row.
+     * @return The result of the assignment problem from the row perspective.
+     * The i-th element of the output is the index of the column assigned to the
+     * i-th row, or -1 if the row has not been assigned.
      */
-    private void colorNeighbors(int row, int col, int maxVH) {
-        if (lines[row][col] == 2) // if cell is colored twice before (intersection cell), don't color it again
-            return;
+    public int[] getRowAssignments() {
+        return this.rowAssignments;
+    }
 
-        if (maxVH > 0 && lines[row][col] == 1) // if cell colored vertically and needs to be recolored vertically, don't color it again (Allowing this step, will color the same line (result won't change), but the num of line will be incremented (wrong value for the num of line drawn))
-            return;
-
-        if (maxVH <= 0 && lines[row][col] == -1) // if cell colored horizontally and needs to be recolored horizontally, don't color it again (Allowing this step, will color the same line (result won't change), but the num of line will be incremented (wrong value for the num of line drawn))
-            return;
-
-        for (int i = 0; i < values.length; i++) { // Loop on cell at indexes [row][col] and its neighbors
-            if (maxVH > 0)    // if value of maxVH is positive, color vertically
-                lines[i][col] = lines[i][col] == -1 || lines[i][col] == 2 ? 2 : 1; // if cell was colored before as horizontal (-1), and now needs to be colored vertical (1), so this cell is an intersection (2). Else if this value was not colored before, color it vertically
-            else            // if value of maxVH is zero or negative color horizontally
-                lines[row][i] = lines[row][i] == 1 || lines[row][i] == 2 ? 2 : -1; // if cell was colored before as vertical (1), and now needs to be colored horizontal (-1), so this cell is an intersection (2). Else if this value was not colored before, color it horizontally
-        }
-
-        // increment line number
-        numLines++;
-//		printMatrix(lines); // Monitor the line draw steps
-    }//End step 3
-
-    /**
-     * Step 4
-     * This step is not always executed. (Check the algorithm in the constructor)
-     * Create additional zeros, by coloring the minimum value of uncovered cells (cells not colored by any line)
-     */
-    public void createAdditionalZeros() {
-        int minUncoveredValue = 0; // We don't know the value of the first uncovered cell, so we put a joker value 0 (0 is safe, because before this step, all zeros were covered)
-
-        // Find the min in the uncovered numbers
-        for (int row = 0; row < values.length; row++) {
-            for (int col = 0; col < values.length; col++) {
-                if (lines[row][col] == 0 && (values[row][col] < minUncoveredValue || minUncoveredValue == 0))
-                    minUncoveredValue = values[row][col];
-            }
-        }
-
-        // Subtract min form all uncovered elements, and add it to all elements covered twice
-        for (int row = 0; row < values.length; row++) {
-            for (int col = 0; col < values.length; col++) {
-                if (lines[row][col] == 0) // If uncovered, subtract
-                    values[row][col] -= minUncoveredValue;
-
-                else if (lines[row][col] == 2) // If covered twice, add
-                    values[row][col] += minUncoveredValue;
-            }
-        }
-    } // End step 4
-
-    /**
-     * Optimization, assign every row a cell in a unique column. Since a row can contain more than one zero,
-     * we need to make sure that all rows are assigned one cell from one unique column. To do this, use brute force
-     *
-     * @param row
-     * @return true
-     **/
-    private boolean optimization(int row) {
-        if (row == rows.length) // If all rows were assigned a cell
-            return true;
-
-        for (int col = 0; col < values.length; col++) { // Try all columns
-            if (values[row][col] == 0 && occupiedCols[col] == 0) { // If the current cell at column `col` has a value of zero, and the column is not reserved by a previous row
-                rows[row] = col; // Assign the current row the current column cell
-                occupiedCols[col] = 1; // Mark the column as reserved
-                if (optimization(row + 1)) // If the next rows were assigned successfully a cell from a unique column, return true
-                    return true;
-                occupiedCols[col] = 0; // If the next rows were not able to get a cell, go back and try for the previous rows another cell from another column
-            }
-        }
-        return false; // If no cell were assigned for the current row, return false to go back one row to try to assign to it another cell from another column
+    public int[] getColumnAssignemnts() {
+        return this.colAssignments;
     }
 
     /**
-     * Overload optimization(int row) method
-     *
-     * @return true
+     * Returns the pairs of row and column indices of the assignments.
+     * @return The result of the assignment problem as pairs. Each element of
+     * the output is an assigned pair whose first element is the index of the
+     * row and the second element is the index of the column. Unassigned rows
+     * and columns are not included.
      */
-    public boolean optimization() {
-        return optimization(0);
-    } //End optimization
-
-    /**
-     * Get the result by returning an array containing the cell assigned for each row
-     *
-     * @return Array of rows where each array index represent the row number, and the value at each index is the column assigned to the corresponding row
-     */
-    public int[] getResult() {
-        return rows;
+    public int[][] getAssignments() {
+        return this.assignments;
     }
 
     /**
-     * Get the sum of the value of the assigned cells for all rows using the original passed matrix, and using the rows array to know the index of the column for each row.
-     *
-     * @return Total values
+     * Reduces the values of the matrix to make zeroes appear. This
+     * corresponds to the first step of the Hungarian Algorithm.
      */
-    public int getTotal() {
-        int total = 0;
-        for (int row = 0; row < values.length; row++)
-            total += originalValues[row][rows[row]];
-        return total;
-    }
-
-    /**
-     * Clone the 2D array
-     *
-     * @return A copy of the 2D array
-     */
-    public int[][] cloneMatrix(int[][] matrix) {
-        int[][] tmp = new int[matrix.length][matrix.length];
-        for (int row = 0; row < matrix.length; row++) {
-            tmp[row] = matrix[row].clone();
-        }
-        return tmp;
-    }
-
-    /**
-     * Print a 2D array
-     *
-     * @param matrix The target 2D array
-     */
-    public void printMatrix(int[][] matrix) {
-        for (int row = 0; row < matrix.length; row++) {
-            for (int col = 0; col < matrix.length; col++) {
-                System.out.print(matrix[row][col] + "\t");
+    void reduceInitialMatrix() {
+        //first part: reduce all rows
+        for (int[] row : costMatrix) {
+            int min = row[0];
+            for (int val : row) {
+                if (val < min) {
+                    min = val;
+                }
             }
-            System.out.println();
+            for (int j = 0; j < row.length; j++) {
+                row[j] -= min;
+            }
         }
-        System.out.println();
+        //second part: reduce all columns
+        for (int j = 0; j < nCols; j++) {
+            int min = costMatrix[0][j];
+            for (int[] row : costMatrix) {
+                if (row[j] < min) {
+                    min = row[j];
+                }
+            }
+            for (int[] row : costMatrix) {
+                row[j] -= min;
+            }
+        }
+    }
+
+    /**
+     * Performs the main loop of the Hungarian algorithm.
+     */
+    public void solveReducedMatrix() {
+        //Steps 0 and 1 have been preprocessed
+        //Step 2 : initial zero starring
+        for (int i = 0; i < nRows; i++) {
+            for (int j = 0; j < nCols; j++) {
+                if (costMatrix[i][j] == 0 && starredCols[j] == -1) {
+                    coveredCols[j] = true;
+                    numberCoveredCols++;
+                    starredRows[i] = j;
+                    starredCols[j] = i;
+                    break;
+                }
+            }
+        }
+        while (numberCoveredCols < nRows) {
+            int[] position = primeZero();
+            while (position == null){
+                //Perform step 6
+                //Get minimal unmarked value
+                int min = Integer.MAX_VALUE;
+                for (int i = 0; i < nRows; i++) {
+                    if (coveredRows[i]) {
+                        continue;
+                    }
+                    for (int j = 0; j < nCols; j++) {
+                        if (coveredCols[j]) {
+                            continue;
+                        }
+                        if (costMatrix[i][j] < min) {
+                            min = costMatrix[i][j];
+                            if (min == 1){
+                                break;
+                            }
+                        }
+                        if (min == 1){
+                            break;
+                        }
+                    }
+                }
+                //modify the matrix
+                for (int i = 0; i < nRows; i++) {
+                    for (int j = 0; j < nCols; j++) {
+                        if (!coveredRows[i]) {
+                            /* If the row is uncovered and the column is covered,
+                        then it's a no-op: add and subtract the same value.
+                             */
+                            if (!coveredCols[j]) {
+                                costMatrix[i][j] -= min;
+                            }
+                        } else if (coveredCols[j]) {
+                            costMatrix[i][j] += min;
+                        }
+                    }
+                }
+                //go back to step 4
+                position = primeZero();
+            }
+            //perform step 5
+            invertPrimedAndStarred(position);
+        }
+        //format the result
+        int assignmentIndex = 0;
+        if (transposed){
+            for (int i = 0; i < nCols; i++){
+                rowAssignments[i] = starredCols[i];
+                if (starredCols[i] != -1){
+                    assignments[assignmentIndex][0] = starredCols[i];
+                    assignments[assignmentIndex][1] = i;
+                    assignmentIndex++;
+                }
+            }
+            System.arraycopy(starredRows, 0, colAssignments, 0, nRows);
+        } else {
+            for (int i = 0; i < nRows; i++){
+                rowAssignments[i] = starredRows[i];
+                if (starredRows[i] != -1) {
+                    assignments[assignmentIndex][0] = i;
+                    assignments[assignmentIndex][1] = starredRows[i];
+                    assignmentIndex++;
+                }
+            }
+            System.arraycopy(starredCols, 0, colAssignments, 0, nCols);
+        }
+    }
+
+    /**
+     * Primes uncovered zeroes in the cost matrix.
+     * Performs the fourth step of the Hungarian Algorithm.
+     * @return the (rowIndex,colIndex) coordinates of the primed zero to star
+     * that has been found, or null if no such zero has been found.
+     */
+    private int[] primeZero() {
+        Queue<Integer> uncoveredColumnQueue = new LinkedList<>();
+        for (int i = 0; i < nRows; i++) {
+            if (coveredRows[i]) {
+                continue;
+            }
+            for (int j = 0; j < nCols; j++) {
+                if (coveredCols[j] || costMatrix[i][j] > 0) {
+                    continue;
+                }
+                //Found a non-covered zero
+                primedRows[i] = j;
+                primedCols[j] = i;
+                if (starredRows[i] == -1) {
+                    return new int[]{i,j};
+                } else {
+                    coveredRows[i] = true;
+                    coveredCols[starredRows[i]] = false;
+                    numberCoveredCols -= 1;
+                    //ignore the rest of the row but handle the uncovered column
+                    uncoveredColumnQueue.add(starredRows[i]);
+                    break;
+                }
+            }
+        }
+        while (!uncoveredColumnQueue.isEmpty()){
+            int j = uncoveredColumnQueue.remove();
+            for (int i = 0; i < nRows; i++){
+                if(coveredRows[i] || costMatrix[i][j] > 0) {
+                    continue;
+                }
+                primedRows[i] = j;
+                primedCols[j] = i;
+                if (starredRows[i] == -1){
+                    return new int[]{i,j};
+                } else {
+                    coveredRows[i] = true;
+                    coveredCols[starredRows[i]] = false;
+                    numberCoveredCols -= 1;
+                    uncoveredColumnQueue.add(starredRows[i]);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Stars selected primed zeroes to increase the line coverage of the matrix.
+     * Performs the fifth step of the Hungarian Algorithm.
+     * @param position array of size 2 containing the row and column indices of
+     * the first primed zero in the alternating series to modify.
+     */
+    private void invertPrimedAndStarred(int[] position){
+        int currentRow = position[0];
+        int currentCol = position[1];
+        int tmp;
+        starredRows[currentRow] = currentCol;
+        while (starredCols[currentCol] != -1){
+            //Move star to its new row in the column of the primed zero
+            tmp = starredCols[currentCol];
+            starredCols[currentCol] = currentRow;
+            currentRow = tmp;
+            //Move star to its new column in the column of the previously
+            //starred zero
+            tmp = primedRows[currentRow];
+            starredRows[currentRow] = tmp;
+            currentCol = tmp;
+        }
+        //set starredCols of last changed zero and reset primes and lines covering
+        starredCols[currentCol] = currentRow;
+        for (int i = 0; i < coveredRows.length; i++){
+            coveredRows[i] = false;
+            primedRows[i] = -1;
+        }
+        //in next step, all columns containing a starred zero will be marked
+        //--> do it right away
+        for (int j = 0; j < nCols; j++){
+            if(!coveredCols[j] && starredCols[j] != -1){
+                numberCoveredCols++;
+                coveredCols[j] = true;
+            }
+            //if a column contained a prime zero, it will still contain one
+            //after the inversion, so the case where a column needs to be
+            //uncovered does not arise
+            primedCols[j] = -1;
+        }
+    }
+
+    /**
+     * @return The internal state of the cost matrix.
+     */
+    int[][] getState() {
+        return this.costMatrix;
+    }
+
+    /**
+     * Checks the validity of the input cost matrix.
+     * @param costMatrix the matrix to solve.
+     * @throws IllegalArgumentException if {@code costMatrix } is not
+     * rectangular (e.g. rows do not all have the same length).
+     */
+    static void checkMatrixValidity(int[][] costMatrix)
+            throws IllegalArgumentException{
+        if (costMatrix == null){
+            throw new IllegalArgumentException("input matrix was null");
+        }
+        if (costMatrix.length == 0){
+            throw new IllegalArgumentException("input matrix was of length 0");
+        }
+        for (int[] row : costMatrix){
+            if (row.length != costMatrix[0].length){
+                throw new IllegalArgumentException("input matrix was not rectangular");
+            }
+        }
     }
 }
