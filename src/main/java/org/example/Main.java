@@ -1,6 +1,7 @@
 package org.example;
 
 import algorithms.BranchAndBound;
+import algorithms.LowerBounds;
 import data.Instance;
 import objects.AssignmentMatrix;
 import objects.SolutionConverter;

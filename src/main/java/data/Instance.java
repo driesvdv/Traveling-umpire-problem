@@ -41,7 +41,7 @@ public class Instance {
             // Read opponents matrix
             for (int i = 0; i < nTeams * 2 - 2; i++) {
                 line = br.readLine().replace("[", "").replace("]", "").trim();
-                String[] values = line.trim().split("\\s+");
+                String[] values = line.trim().replace("]", "").split("\\s+");
 
                 for (int j = 0; j < nTeams; j++) {
                     opponents[i][j] = Integer.parseInt(values[j]);

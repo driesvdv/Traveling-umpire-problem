@@ -155,19 +155,3 @@ public class BranchAndBound {
     }
 }
 
-
-// package algorithms;
-
-// public class BranchAndBound {
-//     int[][] bestSolution;
-
-//     /**
-//      * Constructor for the BranchAndBound class
-//      *
-//      * Input Solution S, umpire u and round r
-//      */
-//     public BranchAndBound(int[][] solution, int umpire, int round) {
-        
-//     }
-// }
-
