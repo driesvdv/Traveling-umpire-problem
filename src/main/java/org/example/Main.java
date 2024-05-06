@@ -12,8 +12,7 @@ public class Main {
 
         Instance instance = new Instance();
         AssignmentMatrix assignmentMatrix = new AssignmentMatrix(instance);
-//        Preprocessing p = new Preprocessing(instance.getOpponents(), 1,3, assignmentMatrix.getTranslationMatrix());
-//        p.preProcessQ1andQ2();
+
         //assignmentMatrix.setTranslationMatrix(p.getMatchPairs());
         LowerBounds lb = new LowerBounds(assignmentMatrix);
         lb.CalculateInitialLowerBounds();
