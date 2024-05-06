@@ -49,13 +49,12 @@ public class BranchAndBound {
                 // Update the state for the next recursive call
                 umpire = nextUmpire;
                 round = nextRound;
-                executeBranchAndBound();
+                if (assignmentMatrix.getAssignmentsWeight() < bestWeight) {
+                    executeBranchAndBound();
+                }
                 // Restore the state
                 umpire = currentUmpire;
                 round = currentRound;
-                //if (!assignmentMatrix.canUmpiresVisitAllTeams(nextRound)) { REDUNDANT CODE
-                //    assignmentMatrix.assignUmpireToMatch(round, umpire, null);
-                //}
             } else {
                 if (checkIfAllTeamsAreVisited()) {
                     int weight = assignmentMatrix.getAssignmentsWeight();
@@ -68,7 +67,6 @@ public class BranchAndBound {
 
                     }
                 }
-                // assignmentMatrix.assignUmpireToMatch(round, umpire, null); REDUNDANT
             }
             assignmentMatrix.assignUmpireToMatch(round, umpire, null);
         }
