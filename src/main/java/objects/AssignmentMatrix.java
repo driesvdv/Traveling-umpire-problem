@@ -46,6 +46,7 @@ public class AssignmentMatrix {
         nUmpires = instance.getnTeams() / 2;
         nTeams = instance.getnTeams();
         n = nTeams/2;
+        upperBound = Integer.MAX_VALUE;
 
         assignmentMatrix = new int[nRounds][nUmpires];
         weightMatrix = new int[nTeams][nTeams];
@@ -90,21 +91,34 @@ public class AssignmentMatrix {
         }
     }
 
-//    private void initTranslationMatrix(Instance inst) {
-//        for (int i = 0; i < nRounds; i++) {
-//            //int[] controleMatrix = new int[teams];
-//            int counter = 0;
-//            for (int j = 0; j < nTeams; j++) {
-//                int team1 = inst.getOpponents()[i][j];
-//                if (team1 > 0){
-//                    int team2 = inst.getOpponents()[i][Math.abs(team1)-1];
-//                    var test = new MatchPair(team1, team2);
-//                    translationMatrix[i][counter] = test;//tmp; //Klopt niet bij j groter dan 4
-//                    counter++;
-//                }
-//            }
-//        }
-//    }
+    public int getAssignmentsWeight() {
+        int weight = 0;
+        for (int i = 0; i < nRounds; i++) {
+            for (int j = 0; j < nUmpires; j++) {
+                if (solutionMatrix[i][j] != null) {
+                    weight += weightMatrix[solutionMatrix[i][j].getHomeTeam() - 1][solutionMatrix[i][j].getOutTeam()
+                            - 1];
+                } else {
+                    throw new RuntimeException("Solution matrix is not complete");
+                }
+            }
+        }
+        return weight;
+    }
+    public int getTotalDistanceTravelled() {
+        int totalDistance = 0;
+        for (int i = 0; i < nRounds-1; i++) {
+            for (int j = 0; j < nUmpires; j++) {
+                if (solutionMatrix[i][j] != null) {
+                    totalDistance += weightMatrix[solutionMatrix[i][j].getHomeTeam() - 1][solutionMatrix[i+1][j].getHomeTeam() - 1];
+                } else {
+                    throw new RuntimeException("Solution matrix is not complete");
+                }
+            }
+        }
+        return totalDistance;
+    }
+
 private void initTranslationMatrix(Instance inst) {
     for (int i = 0; i < nRounds; i++) {
         List<Integer> teams = new ArrayList<>();
@@ -244,7 +258,11 @@ private void initTranslationMatrix(Instance inst) {
     }
 
     public void setBestSolution(MatchPair[][] bestSolution) {
-        this.bestSolution = bestSolution;
+        this.bestSolution = new MatchPair[bestSolution.length][];
+        for (int i = 0; i < bestSolution.length; i++) {
+            this.bestSolution[i] = new MatchPair[bestSolution[i].length];
+            System.arraycopy(bestSolution[i], 0, this.bestSolution[i], 0, bestSolution[i].length);
+        }
     }
 
     public int getUpperBound() {

@@ -37,6 +37,7 @@ public class BranchAndBound {
      * The assignmentMatrix.assignUmpireToMatch(round,umpire,null); need to happen before the return false statement.
      * This is because we only check if an match has been assigned to a previous umpire.
      * **/
+    //TODO not all branches are checked
     public boolean executeBranchAndBound(){
         int nextUmpire = (umpire % amountOfUmpires) + 1;
         int nextRound = ((umpire == assignmentMatrix.getN()) ? round +1 : round);
@@ -46,11 +47,18 @@ public class BranchAndBound {
             if (!solutionIsComplete(assignmentMatrix)){
                 BranchAndBound branchAndBound = new BranchAndBound(nextUmpire, nextRound, assignmentMatrix);
                 if (branchAndBound.executeBranchAndBound()){
-                    return true;
-                }
+                    System.out.println();
 
-                if (round >= 12){
-                    //System.out.println();
+
+                    if (assignmentMatrix.getBestSolution() != assignmentMatrix.getSolutionMatrix() && assignmentMatrix.getTotalDistanceTravelled() < assignmentMatrix.getUpperBound()){
+                        assignmentMatrix.setBestSolution(assignmentMatrix.getSolutionMatrix());
+                        assignmentMatrix.setUpperBound(assignmentMatrix.getTotalDistanceTravelled());
+
+                    }
+                    assignmentMatrix.assignUmpireToMatch(round,umpire+1,null);
+                    assignmentMatrix.assignUmpireToMatch(round,umpire,null);
+                    return false;
+                    //return true;
                 }
                 if(!assignmentMatrix.canUmpiresVisitAllTeams(nextRound)){
                     assignmentMatrix.assignUmpireToMatch(round,umpire,null);
@@ -60,6 +68,7 @@ public class BranchAndBound {
             else{
                 //TODO add local search
                 if (checkIfAllTeamsAreVisited()){
+
                     return true;
                 }
                 assignmentMatrix.assignUmpireToMatch(round,umpire,null);
@@ -102,6 +111,9 @@ public class BranchAndBound {
     }
     //Volgens de paper zal de volgende toewijzing telkens die zijn met de kortste afstand. Er zal dus telkens op afstand gesorteerd moeten worden.
     public List<MatchPair> getFeasibleAllocations(int round, int umpire, int q1, int q2){
+        if (round ==13){
+            System.out.println();
+        }
         List<MatchPair> feasibleAllocations = assignmentMatrix.getPossibleAllocations(round, umpire);
         for (int i = 0; i < umpire-1; i++){ //checks if an umpire isn't assigned to a match in the same round
             if (round+1 < amountOfRounds){
