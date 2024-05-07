@@ -15,6 +15,8 @@ public class AssignmentMatrix {
     private int q1;
     private int q2;
     private int n;
+    private int lowerbound;
+    private boolean isSubProblem;
 
     private MatchPair[][] bestSolution;
     private int bestWeight;
@@ -40,25 +42,46 @@ public class AssignmentMatrix {
     private MatchPair[][] translationMatrix;
 
     public AssignmentMatrix(Instance instance) {
-        q1 = 5;
+        q1 = 4;
         q2 = 2;
         nRounds = instance.getnTeams() * 2 - 2;
 
         nUmpires = instance.getnTeams() / 2;
         nTeams = instance.getnTeams();
         n = nTeams / 2;
-
+        isSubProblem = false;
         assignmentMatrix = new int[nRounds][nUmpires];
         weightMatrix = new int[nTeams][nTeams];
         translationMatrix = new MatchPair[nRounds][nUmpires];
         solutionMatrix = new MatchPair[nRounds][nUmpires];
         bestSolution = new MatchPair[nRounds][nUmpires];
         initTranslationMatrix(instance);
+
         initAssignMentMatrix();
         initWeightMatrix(instance);
 
         preprocessMatches();
         System.out.println("debug");
+    }
+    public AssignmentMatrix(AssignmentMatrix totalMatrix, int startRound, int amountOfRounds, int lowerbound){
+        q1 = totalMatrix.getQ1();
+        q2 = totalMatrix.getQ2();
+        nRounds = amountOfRounds;
+        isSubProblem = true;
+        nUmpires = totalMatrix.getnUmpires();
+        nTeams = totalMatrix.getnTeams();
+        n = totalMatrix.getN();
+        this.lowerbound = lowerbound;
+        assignmentMatrix = new int[nRounds][nUmpires];
+        weightMatrix = new int[nTeams][nTeams];
+        translationMatrix = new MatchPair[nRounds][nUmpires];
+        solutionMatrix = new MatchPair[nRounds][nUmpires];
+        bestSolution = new MatchPair[nRounds][nUmpires];
+
+        initTranslationMatrix(totalMatrix.getTranslationMatrix(),startRound);
+        initAssignMentMatrix();
+        initWeightMatrix(totalMatrix.getWeightMatrix());
+
     }
 
     public int getAssignmentsWeight() {
@@ -104,6 +127,13 @@ public class AssignmentMatrix {
             }
         }
     }
+    private void initWeightMatrix(int[][] weightMatrix) {
+        for (int i = 0; i < weightMatrix.length; i++) {
+            for (int j = 0; j < weightMatrix.length; j++) {
+                this.weightMatrix[i][j] = weightMatrix[i][j];
+            }
+        }
+    }
 
     private void initTranslationMatrix(Instance inst) {
         for (int i = 0; i < nRounds; i++) {
@@ -119,6 +149,14 @@ public class AssignmentMatrix {
                     translationMatrix[i][counter] = test;// tmp; //Klopt niet bij j groter dan 4
                     counter++;
                 }
+            }
+        }
+    }
+
+    private void initTranslationMatrix(MatchPair[][] totalTranslationMatrix, int startround) {
+        for (int i = 0; i < nRounds; i++) {
+            for (int j = 0; j < nUmpires; j++) {
+                translationMatrix[i][j] = totalTranslationMatrix[i+startround][j];
             }
         }
     }
@@ -166,6 +204,10 @@ public class AssignmentMatrix {
         return true;
     }
 
+    public int[][] getWeightMatrix() {
+        return weightMatrix;
+    }
+
     public MatchPair[][] getTranslationMatrix() {
         return translationMatrix;
     }
@@ -182,6 +224,10 @@ public class AssignmentMatrix {
         return nTeams;
     }
 
+    public boolean isSubProblem() {
+        return isSubProblem;
+    }
+
     public int[][] getAssignmentMatrix() {
         return assignmentMatrix;
     }
@@ -192,6 +238,10 @@ public class AssignmentMatrix {
 
     public List<MatchPair> getPossibleAllocations(int round, int umpire) {
         return solutionMatrix[round][umpire - 1].getFeasibleChildren();
+    }
+
+    public int getLowerbound() {
+        return lowerbound;
     }
 
     public void setTranslationMatrix(MatchPair[][] translationMatrix) {

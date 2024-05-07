@@ -17,6 +17,7 @@ public class BranchAndBound {
 
     private int lowerBound = 0;
     private int upperBound = Integer.MAX_VALUE;
+    boolean isSubProblem;
 
     private AssignmentMatrix bestSolution; // Reference to the best solution found so far
 
@@ -27,6 +28,8 @@ public class BranchAndBound {
         this.assignmentMatrix = assignmentMatrix;
         this.amountOfUmpires = assignmentMatrix.getnUmpires();
         this.amountOfRounds = assignmentMatrix.getnRounds();
+        this.lowerBound = assignmentMatrix.getLowerbound();
+        this.isSubProblem = assignmentMatrix.isSubProblem();
     }
 
     public AssignmentMatrix executeBranchAndBound() {
@@ -53,7 +56,7 @@ public class BranchAndBound {
                 umpire = currentUmpire;
                 round = currentRound;
             } else {
-                if (checkIfAllTeamsAreVisited()) {
+                if (isSubProblem){
                     int weight = assignmentMatrix.getAssignmentsWeight();
                     if (weight < upperBound) {
                         upperBound = weight;
@@ -61,7 +64,19 @@ public class BranchAndBound {
                         System.out.println("New best solution found! Weight: " + upperBound);
                         assignmentMatrix.setBestSolution(assignmentMatrix.getSolutionMatrix());
                         assignmentMatrix.setBestWeight(upperBound);
+                    }
+                }
+                else{
+                    if (checkIfAllTeamsAreVisited() ) {
+                        int weight = assignmentMatrix.getAssignmentsWeight();
+                        if (weight < upperBound) {
+                            upperBound = weight;
+                            bestSolution = assignmentMatrix;
+                            System.out.println("New best solution found! Weight: " + upperBound);
+                            assignmentMatrix.setBestSolution(assignmentMatrix.getSolutionMatrix());
+                            assignmentMatrix.setBestWeight(upperBound);
 
+                        }
                     }
                 }
             }
