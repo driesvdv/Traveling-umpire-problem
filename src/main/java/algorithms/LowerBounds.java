@@ -18,6 +18,7 @@ public class LowerBounds {
         this.lowerboundsMatrix = new int[assignmentMatrix.getnRounds()-1][assignmentMatrix.getnRounds()-1];
         totalLowerbound = 0;
         test = new int[assignmentMatrix.getnRounds()];
+        CalculateInitialLowerBounds();
     }
     public void CalculateInitialLowerBounds(){
         for (int i = 0; i < assignmentMatrix.getnRounds()-1; i++){

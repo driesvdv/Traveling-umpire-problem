@@ -4,6 +4,7 @@ import data.Instance;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 import java.util.List;
@@ -16,6 +17,7 @@ public class AssignmentMatrix {
     private int q2;
     private int n;
     private int lowerbound;
+    private AtomicInteger lowerboundsValue;
     private boolean isSubProblem;
 
     private MatchPair[][] bestSolution;
@@ -42,10 +44,10 @@ public class AssignmentMatrix {
     private MatchPair[][] translationMatrix;
 
     public AssignmentMatrix(Instance instance) {
-        q1 = 4;
+        q1 = 5;
         q2 = 2;
         nRounds = instance.getnTeams() * 2 - 2;
-
+        this.lowerboundsValue = new AtomicInteger(0);
         nUmpires = instance.getnTeams() / 2;
         nTeams = instance.getnTeams();
         n = nTeams / 2;
@@ -242,6 +244,12 @@ public class AssignmentMatrix {
 
     public int getLowerbound() {
         return lowerbound;
+    }
+    public AtomicInteger getLowerboundsValue(){
+        return lowerboundsValue;
+    }
+    public void setLowerboundsValue(AtomicInteger lb){
+        this.lowerboundsValue = lb;
     }
 
     public void setTranslationMatrix(MatchPair[][] translationMatrix) {
