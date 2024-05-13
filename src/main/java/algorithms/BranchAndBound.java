@@ -50,15 +50,33 @@ public class BranchAndBound {
                 round = nextRound;
                 if (assignmentMatrix.getAssignmentsWeight() < upperBound
                 //&& assignmentMatrix.canUmpiresVisitAllTeams(currentRound) // Faster without this check
+
                 )
                 {
-                    if (currentRound < amountOfRounds - (amountOfRounds/3)) {
-                        if (assignmentMatrix.canUmpiresVisitAllTeams(currentRound)){
+                    if (assignmentMatrix.getAssignmentsWeight() + assignmentMatrix.getLowerboundPerRound(round) < upperBound) {
+                        if (!isSubProblem){
+                            if (assignmentMatrix.canUmpiresVisitAllTeams(currentRound)){
+                                executeBranchAndBound();
+                            }
+                        }
+                        else{
                             executeBranchAndBound();
                         }
-                    }else{
-                        executeBranchAndBound();
+                        //executeBranchAndBound();
                     }
+//                    if (!isSubProblem){
+//                        if (assignmentMatrix.getLowerboundsValueAtomic() + assignmentMatrix.)
+//                    }
+//                    else{
+//                        executeBranchAndBound();
+//                    }
+//                    if (currentRound < amountOfRounds - (amountOfRounds/3)) {
+//                        if (assignmentMatrix.canUmpiresVisitAllTeams(currentRound)){
+//                            executeBranchAndBound();
+//                        }
+//                    }else{
+                        //executeBranchAndBound();
+                    //}
                 }
                 // Restore the state
                 umpire = currentUmpire;
@@ -69,7 +87,7 @@ public class BranchAndBound {
                     if (weight < upperBound) {
                         upperBound = weight;
                         bestSolution = assignmentMatrix;
-                        System.out.println("New best solution found! Weight: " + upperBound);
+                        //System.out.println("New best solution found! Weight: " + upperBound);
                         assignmentMatrix.setBestSolution(assignmentMatrix.getSolutionMatrix());
                         assignmentMatrix.setBestWeight(upperBound);
                     }
@@ -80,7 +98,10 @@ public class BranchAndBound {
                         if (weight < upperBound) {
                             upperBound = weight;
                             bestSolution = assignmentMatrix;
-                            System.out.println("New best solution found! Weight: " + upperBound);
+                            if (!isSubProblem){
+                                System.out.println("New best solution found! Weight: " + upperBound);
+                            }
+                            //System.out.println("New best solution found! Weight: " + upperBound);
                             assignmentMatrix.setBestSolution(assignmentMatrix.getSolutionMatrix());
                             assignmentMatrix.setBestWeight(upperBound);
 

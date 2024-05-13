@@ -23,6 +23,8 @@ public class AssignmentMatrix {
     private MatchPair[][] bestSolution;
     private int bestWeight;
 
+    private boolean isComplete;
+
     /**
      * The assignment matrix is a 2D array that represents the assignment of umpires
      * to games.
@@ -42,10 +44,11 @@ public class AssignmentMatrix {
      * the assignment matrix and the teams playing the match.
      */
     private MatchPair[][] translationMatrix;
+    private int[] lowerboundPerRound; //This needs to be synchonized between the b&b and lowerbounds
 
     public AssignmentMatrix(Instance instance) {
-        q1 = 5;
-        q2 = 2;
+        q1 = 4;
+        q2 = 3;
         nRounds = instance.getnTeams() * 2 - 2;
         this.lowerboundsValue = new AtomicInteger(0);
         nUmpires = instance.getnTeams() / 2;
@@ -57,13 +60,15 @@ public class AssignmentMatrix {
         translationMatrix = new MatchPair[nRounds][nUmpires];
         solutionMatrix = new MatchPair[nRounds][nUmpires];
         bestSolution = new MatchPair[nRounds][nUmpires];
+        isComplete = false;
+        initLowerboundPerRound();
         initTranslationMatrix(instance);
 
         initAssignMentMatrix();
         initWeightMatrix(instance);
 
         preprocessMatches();
-        System.out.println("debug");
+        //System.out.println("debug");
     }
     public AssignmentMatrix(AssignmentMatrix totalMatrix, int startRound, int amountOfRounds, int lowerbound){
         q1 = totalMatrix.getQ1();
@@ -79,11 +84,34 @@ public class AssignmentMatrix {
         translationMatrix = new MatchPair[nRounds][nUmpires];
         solutionMatrix = new MatchPair[nRounds][nUmpires];
         bestSolution = new MatchPair[nRounds][nUmpires];
-
+        isComplete = false;
+        initLowerboundPerRound();
         initTranslationMatrix(totalMatrix.getTranslationMatrix(),startRound);
         initAssignMentMatrix();
         initWeightMatrix(totalMatrix.getWeightMatrix());
-
+    }
+    //This implementation will be used to get the lowerbounds.
+    //It will run from the last round to the first round, so the startround is the last round
+    //The stepsize is the amount of rounds that are taken into account when calculating the lowerbound
+    public AssignmentMatrix(AssignmentMatrix totalMatrix, int startRound, int stepSize){
+        q1 = totalMatrix.getQ1();
+        q2 = totalMatrix.getQ2();
+        nRounds = stepSize;
+        isSubProblem = true;
+        nUmpires = totalMatrix.getnUmpires();
+        nTeams = totalMatrix.getnTeams();
+        n = totalMatrix.getN();
+        //this.lowerbound = lowerbound;
+        assignmentMatrix = new int[nRounds][nUmpires];
+        weightMatrix = new int[nTeams][nTeams];
+        translationMatrix = new MatchPair[nRounds][nUmpires];
+        solutionMatrix = new MatchPair[nRounds][nUmpires];
+        bestSolution = new MatchPair[nRounds][nUmpires];
+        isComplete = false;
+        initLowerboundPerRound();
+        initTranslationMatrixLowerbounds(totalMatrix.getTranslationMatrix(),startRound, stepSize);
+        initAssignMentMatrix();
+        initWeightMatrix(totalMatrix.getWeightMatrix());
     }
 
     public int getAssignmentsWeight() {
@@ -161,6 +189,15 @@ public class AssignmentMatrix {
                 translationMatrix[i][j] = totalTranslationMatrix[i+startround][j];
             }
         }
+    }
+
+    private void initTranslationMatrixLowerbounds(MatchPair[][] totalTranslationMatrix, int startRound ,int stepsize) {
+        for (int i = 0; i < nRounds; i++) {
+            for (int j = 0; j < nUmpires; j++) {
+                translationMatrix[i][j] = totalTranslationMatrix[i+startRound+1 - stepsize][j];
+            }
+        }
+       // System.out.println();
     }
 
     /**
@@ -245,13 +282,13 @@ public class AssignmentMatrix {
     public int getLowerbound() {
         return lowerbound;
     }
-    public AtomicInteger getLowerboundsValue(){
-        return lowerboundsValue;
+    public int getLowerboundsValueAtomic(){
+        return lowerboundsValue.get();
     }
-    public void setLowerboundsValue(AtomicInteger lb){
-        this.lowerboundsValue = lb;
+    public void setLowerboundsValue(int lb){
+        this.lowerboundsValue.set(lb);
     }
-
+    //public int getLowerboundsPerRound(int round, int)
     public void setTranslationMatrix(MatchPair[][] translationMatrix) {
         this.translationMatrix = translationMatrix;
     }
@@ -295,6 +332,24 @@ public class AssignmentMatrix {
 
     public int getBestWeight() {
         return bestWeight;
-
     }
+    public synchronized int getLowerboundPerRound(int round){
+        return lowerboundPerRound[round];
+    }
+    public synchronized void setLowerboundPerRound(int round, int value){
+        lowerboundPerRound[round] = value;
+    }
+    public void initLowerboundPerRound(){
+        lowerboundPerRound = new int[nRounds];
+        for (int i = 0; i < nRounds; i++){
+            lowerboundPerRound[i] = 0;
+        }
+    }
+    public synchronized void setIsComplete(boolean value){
+        isComplete = value;
+    }
+    public synchronized boolean getIsComplete(){
+        return isComplete;
+    }
+
 }

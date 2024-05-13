@@ -9,7 +9,6 @@ public class LowerBounds {
     private AssignmentMatrix assignmentMatrix;
     private int[][][] solutionMatrix; //Matrix containing the values of solutions for the subproblems
     private int[][] lowerboundsMatrix; //Matrix containing the lower bounds for all pairs of rounds
-    private AssignmentMatrix[][] LBAssignmentMatrices; //Matrix containing the assignment matrices for the lower bounds for every iteration of rounds
     private int totalLowerbound;
     private int test[];
     public LowerBounds(AssignmentMatrix assignmentMatrix) {
@@ -39,8 +38,10 @@ public class LowerBounds {
             lowerboundsMatrix[0][i] = optimalAssignmentCost;
         }
         test[0] = totalLowerbound;
+        //updateLowerboundMatrix(0);
         System.out.println();
     }
+
 
     public int getOptimalAssignmentCost(int[][] assignmentMatrix, int[][] costMatrix){
         int distance = 0;
@@ -67,7 +68,7 @@ public class LowerBounds {
         }
         return distanceMatrix;
     }
-    public void test2(){
+    public void calculateLowerbounds(){
         for (int i = 0; i < assignmentMatrix.getnRounds()-1;i++){
             int startValue = 2+i;
             int lastValue = 0;
@@ -77,9 +78,6 @@ public class LowerBounds {
                 AssignmentMatrix bestSolution = branchAndBound.executeBranchAndBound();
                 lowerboundsMatrix[i+1][j] = bestSolution.getBestWeight();
                 lastValue = j;
-                if (i == 3){
-                    System.out.println();
-                }
             }
             if (lastValue != assignmentMatrix.getnRounds()-1){
                 if (startValue < assignmentMatrix.getnRounds()-1){
@@ -99,8 +97,18 @@ public class LowerBounds {
                 totalLowerbound = CalculateNewBound(i+1);
                 test[i+1] = totalLowerbound;
             }
+            //updateLowerboundMatrix(i+1);
+            assignmentMatrix.setLowerboundsValue(totalLowerbound);
         }
         System.out.println();
+    }
+
+    public void calculateLowerboundsReversed(){
+        int matchingValues = getHungarianValue(assignmentMatrix.getnRounds()-1);
+
+        for (int i = assignmentMatrix.getnRounds(); i > 1; i--){
+
+        }
     }
     public int CalculateNewBound(int round){
         int lb = 0;
@@ -108,6 +116,25 @@ public class LowerBounds {
             lb += lowerboundsMatrix[round][i];
         }
         return lb;
+    }
+    public int getHungarianValue(int roundValue){
+        int[][] costMatrix = CreateInitialDistanceMatrix(roundValue);
+        int[][] costMatrixCopy = new int[costMatrix.length][];
+        for (int j = 0; j < costMatrix.length; j++) {
+            costMatrixCopy[j] = costMatrix[j].clone();
+        }
+        HungarianAlgorithm h = new HungarianAlgorithm(costMatrixCopy);
+
+        h.reduceInitialMatrix();
+        h.solveReducedMatrix();
+
+        int[][] test = h.getAssignments();
+        System.out.println();
+        int optimalAssignmentCost = getOptimalAssignmentCost(test, costMatrix);
+        this.totalLowerbound += optimalAssignmentCost;
+
+
+        return 0;
     }
 }
 
