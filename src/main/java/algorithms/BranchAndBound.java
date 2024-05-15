@@ -15,12 +15,10 @@ public class BranchAndBound {
     private int amountOfUmpires;
     private int amountOfRounds;
 
-    private int lowerBound = 0;
     private int upperBound = Integer.MAX_VALUE;
     boolean isSubProblem;
 
     private AssignmentMatrix bestSolution; // Reference to the best solution found so far
-
 
     public BranchAndBound(AssignmentMatrix assignmentMatrix) {
         this.umpire = 1;
@@ -28,7 +26,6 @@ public class BranchAndBound {
         this.assignmentMatrix = assignmentMatrix;
         this.amountOfUmpires = assignmentMatrix.getnUmpires();
         this.amountOfRounds = assignmentMatrix.getnRounds();
-        this.lowerBound = assignmentMatrix.getLowerbound();
         this.isSubProblem = assignmentMatrix.isSubProblem();
     }
 
@@ -36,72 +33,47 @@ public class BranchAndBound {
         int nextUmpire = (umpire % amountOfUmpires) + 1;
         int nextRound = ((umpire == assignmentMatrix.getN()) ? round + 1 : round);
         int currentWeight = assignmentMatrix.getAssignmentsWeight();
-        List<MatchPair> feasibleAllocations = getFeasibleAllocations(round - 1, umpire, assignmentMatrix.getQ1(), assignmentMatrix.getQ2(), currentWeight);
+        List<MatchPair> feasibleAllocations = getFeasibleAllocations(round - 1, umpire, assignmentMatrix.getQ1(),
+                assignmentMatrix.getQ2(), currentWeight);
 
         for (MatchPair mp : feasibleAllocations) {
             assignmentMatrix.assignUmpireToMatch(round, umpire, mp);
-            //int currentWeight = assignmentMatrix.getAssignmentsWeight();
-            if (!isSolutionComplete() && currentWeight  < upperBound) {
+            // int currentWeight = assignmentMatrix.getAssignmentsWeight();
+            if (!isSolutionComplete() && currentWeight < upperBound) {
                 // Save the current state
                 int currentUmpire = umpire;
                 int currentRound = round;
                 // Update the state for the next recursive call
                 umpire = nextUmpire;
                 round = nextRound;
-                if (assignmentMatrix.getAssignmentsWeight() < upperBound
-                //&& assignmentMatrix.canUmpiresVisitAllTeams(currentRound) // Faster without this check
-
-                )
+                if (assignmentMatrix.getAssignmentsWeight() + assignmentMatrix.getLowerboundPerRound(round) < upperBound) 
                 {
-                    if (assignmentMatrix.getAssignmentsWeight() + assignmentMatrix.getLowerboundPerRound(round) < upperBound) {
-                        if (!isSubProblem){
-                            if (assignmentMatrix.canUmpiresVisitAllTeams(currentRound)){
-                                executeBranchAndBound();
-                            }
-                        }
-                        else{
-                            executeBranchAndBound();
-                        }
-                        //executeBranchAndBound();
-                    }
-//                    if (!isSubProblem){
-//                        if (assignmentMatrix.getLowerboundsValueAtomic() + assignmentMatrix.)
-//                    }
-//                    else{
-//                        executeBranchAndBound();
-//                    }
-//                    if (currentRound < amountOfRounds - (amountOfRounds/3)) {
-//                        if (assignmentMatrix.canUmpiresVisitAllTeams(currentRound)){
-//                            executeBranchAndBound();
-//                        }
-//                    }else{
-                        //executeBranchAndBound();
-                    //}
+                        // if (assignmentMatrix.canUmpiresVisitAllTeams(currentRound)){ FASTER WITHOUT
+                        // THIS CHECK
+                        executeBranchAndBound();    
                 }
-                // Restore the state
                 umpire = currentUmpire;
                 round = currentRound;
             } else {
-                if (isSubProblem){
+                if (isSubProblem) {
                     int weight = assignmentMatrix.getAssignmentsWeight();
                     if (weight < upperBound) {
                         upperBound = weight;
                         bestSolution = assignmentMatrix;
-                        //System.out.println("New best solution found! Weight: " + upperBound);
+                        // System.out.println("New best solution found! Weight: " + upperBound);
                         assignmentMatrix.setBestSolution(assignmentMatrix.getSolutionMatrix());
                         assignmentMatrix.setBestWeight(upperBound);
                     }
-                }
-                else{
+                } else {
                     if (checkIfAllTeamsAreVisited()) {
                         int weight = assignmentMatrix.getAssignmentsWeight();
                         if (weight < upperBound) {
                             upperBound = weight;
                             bestSolution = assignmentMatrix;
-                            if (!isSubProblem){
+                            if (!isSubProblem) {
                                 System.out.println("New best solution found! Weight: " + upperBound);
                             }
-                            //System.out.println("New best solution found! Weight: " + upperBound);
+                            // System.out.println("New best solution found! Weight: " + upperBound);
                             assignmentMatrix.setBestSolution(assignmentMatrix.getSolutionMatrix());
                             assignmentMatrix.setBestWeight(upperBound);
 
@@ -113,7 +85,6 @@ public class BranchAndBound {
         }
         return bestSolution;
     }
-
 
     public boolean isSolutionComplete() {
         if (round == amountOfRounds - 1) {
@@ -131,12 +102,13 @@ public class BranchAndBound {
         for (int i = 0; i < amountOfUmpires; i++) {
             boolean[] visited = new boolean[assignmentMatrix.getnTeams()];
             for (int j = 0; j < amountOfRounds; j++) {
-                if (assignmentMatrix.getSolutionMatrix()[j][i] != null){
+                if (assignmentMatrix.getSolutionMatrix()[j][i] != null) {
                     int team1 = assignmentMatrix.getSolutionMatrix()[j][i].getHomeTeam();
                     visited[team1 - 1] = true;
                 }
             }
-            int unvisitedTeams = (int) IntStream.range(0, assignmentMatrix.getnTeams()).filter(x -> !visited[x]).count();
+            int unvisitedTeams = (int) IntStream.range(0, assignmentMatrix.getnTeams()).filter(x -> !visited[x])
+                    .count();
             if (unvisitedTeams != 0) {
                 return false;
             }
@@ -158,8 +130,8 @@ public class BranchAndBound {
         while (iterator.hasNext()) {
             MatchPair mp = iterator.next();
             if (!checkPreviousMatches(round + 1, umpire, q1, q2, mp)
-                    | upperBound < currDistance + assignmentMatrix.getDistance(mp.getHomeTeam()-1, previousHomeTeamLocation)
-            ) {
+                    | upperBound < currDistance
+                            + assignmentMatrix.getDistance(mp.getHomeTeam() - 1, previousHomeTeamLocation)) {
                 iterator.remove();
             }
         }
@@ -198,4 +170,3 @@ public class BranchAndBound {
         return true;
     }
 }
-
