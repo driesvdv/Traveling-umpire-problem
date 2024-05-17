@@ -73,18 +73,13 @@ public class LowerboundsV2 {
         assignmentMatrix.setLowerboundPerRound(round, lowerbound);
     }
 
-    //We start on 0 so 0-13 instead of 1-14
-    //We don't need to calculate anything the last round so the last is rounds - 2
-    //The first round is calculate with the Hungarian algorithm so we start on 1
+    // Start calculating the lowerbounds at the last round
+    // The first round is calculate with the Hungarian algorithm so we start on 1
     public void calculateLowerbounds(){
         //calculateLargeLowerboundFirst();
         int stepValue = 2;
         for (int i = 1; i < assignmentMatrix.getnRounds()-1; i++){
-            int minDistanceStep = 0;
-            if (assignmentMatrix.getIsComplete()){
-                break;
-            }
-            int remainder = (assignmentMatrix.getnRounds()-1)%stepValue;
+            int minDistanceStep = 0;           
             for (int j = assignmentMatrix.getnRounds()-1; j >= stepValue; j-=stepValue){
                 AssignmentMatrix matrix = new AssignmentMatrix(assignmentMatrix, j, stepValue+1);
                 BranchAndBound branchAndBound = new BranchAndBound(matrix);
@@ -92,19 +87,10 @@ public class LowerboundsV2 {
                 minDistanceMatrix[i][j-1] = bestSolution.getBestWeight();
                 if (bestSolution.getBestWeight() + minDistanceStep > lowerboundPerRound[j-stepValue]){
                     lowerboundPerRound[j-stepValue] = bestSolution.getBestWeight() + minDistanceStep;
-                    setNewLowerboundInAssignmentMatrix(j-stepValue, lowerboundPerRound[j-stepValue]);
+                    setNewLowerboundInAssignmentMatrix(j-stepValue, lowerboundPerRound[j-stepValue]); // This is what is used in branch and bound
                 }
                 minDistanceStep += bestSolution.getBestWeight();
             }
-
-            //TODO: for each amount of rounds check if the bounds are better.
-
-            //The last values in the array are the most useful. So why bother to fix the first ones.
-//            for (int j = remainder; j >0; j--){
-//
-//                minDistanceMatrix[i][j] = minDistanceMatrix[0][j];
-//                minDistanceStep += minDistanceMatrix[0][j];
-//            }
             stepValue++;
             lowestDistancePerAmountOfSteps[i] = minDistanceStep;
         }
