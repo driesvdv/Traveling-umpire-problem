@@ -54,15 +54,7 @@ public class BranchAndBound {
                 )
                 {
                     if (assignmentMatrix.getAssignmentsWeight() + assignmentMatrix.getLowerboundPerRound(round) < upperBound) {
-                        if (!isSubProblem){
-                            if (assignmentMatrix.canUmpiresVisitAllTeams(currentRound)){
-                                executeBranchAndBound();
-                            }
-                        }
-                        else{
-                            executeBranchAndBound();
-                        }
-                        //executeBranchAndBound();
+                        executeBranchAndBound();
                     }
 //                    if (!isSubProblem){
 //                        if (assignmentMatrix.getLowerboundsValueAtomic() + assignmentMatrix.)

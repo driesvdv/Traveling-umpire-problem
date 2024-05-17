@@ -17,7 +17,6 @@ public class AssignmentMatrix {
     private int q2;
     private int n;
     private int lowerbound;
-    private AtomicInteger lowerboundsValue;
     private boolean isSubProblem;
 
     private MatchPair[][] bestSolution;
@@ -47,10 +46,9 @@ public class AssignmentMatrix {
     private int[] lowerboundPerRound; //This needs to be synchonized between the b&b and lowerbounds
 
     public AssignmentMatrix(Instance instance) {
-        q1 = 4;
-        q2 = 3;
+        q1 = 5;
+        q2 = 2;
         nRounds = instance.getnTeams() * 2 - 2;
-        this.lowerboundsValue = new AtomicInteger(0);
         nUmpires = instance.getnTeams() / 2;
         nTeams = instance.getnTeams();
         n = nTeams / 2;
@@ -101,7 +99,6 @@ public class AssignmentMatrix {
         nUmpires = totalMatrix.getnUmpires();
         nTeams = totalMatrix.getnTeams();
         n = totalMatrix.getN();
-        //this.lowerbound = lowerbound;
         assignmentMatrix = new int[nRounds][nUmpires];
         weightMatrix = new int[nTeams][nTeams];
         translationMatrix = new MatchPair[nRounds][nUmpires];
@@ -282,12 +279,7 @@ public class AssignmentMatrix {
     public int getLowerbound() {
         return lowerbound;
     }
-    public int getLowerboundsValueAtomic(){
-        return lowerboundsValue.get();
-    }
-    public void setLowerboundsValue(int lb){
-        this.lowerboundsValue.set(lb);
-    }
+
     //public int getLowerboundsPerRound(int round, int)
     public void setTranslationMatrix(MatchPair[][] translationMatrix) {
         this.translationMatrix = translationMatrix;

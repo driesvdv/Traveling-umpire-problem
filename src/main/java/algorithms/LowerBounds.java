@@ -98,7 +98,7 @@ public class LowerBounds {
                 test[i+1] = totalLowerbound;
             }
             //updateLowerboundMatrix(i+1);
-            assignmentMatrix.setLowerboundsValue(totalLowerbound);
+            //assignmentMatrix.setLowerboundsValue(totalLowerbound);
         }
         System.out.println();
     }
