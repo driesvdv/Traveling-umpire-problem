@@ -18,33 +18,38 @@ public class LowerBounds {
         this.lowerboundPerRound = new int[assignmentMatrix.getnRounds() - 1];
     }
 
-    public void calculateInitialViaHungarian(){
+    public void calculateInitialViaHungarian() {
         int minDistanceOneStep = 0;
-        for (int i = 0; i < assignmentMatrix.getnRounds()-1; i++){
-            int[][] costMatrix = createInitialDistanceMatrix(i);
+        int nRounds = assignmentMatrix.getnRounds();
+
+        for (int round = 0; round < nRounds - 1; round++) {
+            int[][] costMatrix = createInitialDistanceMatrix(round);
             int[][] costMatrixCopy = new int[costMatrix.length][];
-            for (int j = 0; j < costMatrix.length; j++) {
-                costMatrixCopy[j] = costMatrix[j].clone();
+
+            for (int row = 0; row < costMatrix.length; row++) {
+                costMatrixCopy[row] = costMatrix[row].clone();
             }
-            HungarianAlgorithm h = new HungarianAlgorithm(costMatrixCopy);
 
-            h.reduceInitialMatrix();
-            h.solveReducedMatrix();
+            HungarianAlgorithm hungarian = new HungarianAlgorithm(costMatrixCopy);
+            hungarian.reduceInitialMatrix();
+            hungarian.solveReducedMatrix();
+            int[][] assignments = hungarian.getAssignments();
+            int optimalAssignmentCost = getOptimalAssignmentCost(assignments, costMatrix);
 
-            int[][] test = h.getAssignments();
-            int optimalAssignmentCost = getOptimalAssignmentCost(test, costMatrix);
             minDistanceOneStep += optimalAssignmentCost;
-            minDistanceMatrix[0][i] = optimalAssignmentCost;
+            minDistanceMatrix[0][round] = optimalAssignmentCost;
             lowestDistancePerAmountOfSteps[0] = minDistanceOneStep;
-            for (int j = 0; j <= i; j++){
+
+            for (int j = 0; j <= round; j++) {
                 lowerboundPerRound[j] += optimalAssignmentCost;
                 setNewLowerboundInAssignmentMatrix(j, lowerboundPerRound[j]);
-                System.out.println();
             }
         }
+
         lowerboundPerRound[0] = minDistanceOneStep;
-        System.out.println("Hungarian done");
+        System.out.println("Hungarian algorithm calculation completed.");
     }
+
     public int[][] createInitialDistanceMatrix(int round){
         MatchPair[] firstRound = assignmentMatrix.getTranslationMatrix()[round];
         MatchPair[] secondRound = assignmentMatrix.getTranslationMatrix()[round+1];
@@ -63,6 +68,7 @@ public class LowerBounds {
         }
         return distanceMatrix;
     }
+
     public int getOptimalAssignmentCost(int[][] assignmentMatrix, int[][] costMatrix){
         int distance = 0;
         for (int i = 0; i < assignmentMatrix.length; i++) {
@@ -70,87 +76,53 @@ public class LowerBounds {
         }
         return distance;
     }
+
     public void setNewLowerboundInAssignmentMatrix(int round, int lowerbound){
         assignmentMatrix.setLowerboundPerRound(round, lowerbound);
     }
 
     // Start calculating the lowerbounds at the last round
     // The first round is calculate with the Hungarian algorithm so we start on 1
-    public void calculateLowerbounds(){
-        //calculateLargeLowerboundFirst();
-        int stepValue = 2;
-        for (int i = 1; i < assignmentMatrix.getnRounds()-1; i++){
-            int minDistanceStep = 0;
-            int remainder = (assignmentMatrix.getnRounds()-1)%stepValue;
+    public void calculateLowerbounds() {
+        int stepValue = 2; // Initialize step value
 
-            for (int j = assignmentMatrix.getnRounds()-1; j >= stepValue; j-=stepValue){
-                AssignmentMatrix matrix = new AssignmentMatrix(assignmentMatrix, j, stepValue+1);
+        // Outer loop iterates all round sizes
+        for (int i = 1; i < assignmentMatrix.getnRounds() - 1; i++) {
+            int minDistanceStep = 0; // Initialize minimum distance for the current step
+            int remainder = (assignmentMatrix.getnRounds() - 1) % stepValue; // Calculate the remainder
+
+            // Inner loop iterates through the rounds in steps of stepValue
+            for (int j = assignmentMatrix.getnRounds() - 1; j >= stepValue; j -= stepValue) {
+                // Create a new AssignmentMatrix for the current sub-problem
+                AssignmentMatrix matrix = new AssignmentMatrix(assignmentMatrix, j, stepValue + 1);
+
+                // Execute Branch and Bound algorithm to find the best solution
                 BranchAndBound branchAndBound = new BranchAndBound(matrix);
-                AssignmentMatrix bestSolution = branchAndBound.executeBranchAndBound(); //TODO if this is null the problem is infeasible. At the moment no check because it might be null because of an implementation error.
-                minDistanceMatrix[i][j-1] = bestSolution.getBestWeight();
-                if (bestSolution.getBestWeight() + minDistanceStep > lowerboundPerRound[j-stepValue]){
-                    lowerboundPerRound[j-stepValue] = bestSolution.getBestWeight() + minDistanceStep;
-                    setNewLowerboundInAssignmentMatrix(j-stepValue, lowerboundPerRound[j-stepValue]); // This is what is used in branch and bound
+                AssignmentMatrix bestSolution = branchAndBound.executeBranchAndBound();
+
+                // Store the best weight (cost) from the solution
+                minDistanceMatrix[i][j - 1] = bestSolution.getBestWeight();
+
+                // Update lower bounds if the new cost is greater than the current lower bound
+                int difference = bestSolution.getBestWeight() + minDistanceStep - lowerboundPerRound[j - stepValue];
+                if (difference > 0) {
+                    for  (int k = j-stepValue;  k>=0; k--) {
+                        lowerboundPerRound[k] += difference;
+                        setNewLowerboundInAssignmentMatrix(k, lowerboundPerRound[k]);
+                    }
                 }
+
+                // Accumulate the minimum distance for the current step
                 minDistanceStep += bestSolution.getBestWeight();
             }
-            updateAllLowerbounds(remainder, lowerboundPerRound[remainder+1], stepValue); //Not sure if this is correct
+
+            // Increment step value for the next iteration
             stepValue++;
+
+            // Store the minimum distance for the current step size
             lowestDistancePerAmountOfSteps[i] = minDistanceStep;
         }
+
+        System.out.println();
     }
-
-    //When we calculate a new lowerbound, we want to use this to update all the lowerbounds, combining previous found solutions to create better results.
-    public void updateAllLowerbounds(int remainder, int lowerbound, int stepValue){
-        int toAddValue = 0;
-        for (int i = remainder; i > 0; i--){
-            toAddValue += minDistanceMatrix[0][i-1];
-            if (lowerboundPerRound[i] < lowerbound + toAddValue){
-
-                System.out.println("Lowerbound updated for round: " + i + " with value: " + (lowerbound +toAddValue) + ", previous value: " + lowerboundPerRound[i]);
-                lowerboundPerRound[i] = lowerbound +toAddValue;
-                setNewLowerboundInAssignmentMatrix(i, lowerboundPerRound[i]);
-            }
-
-        }
-    }
-
-    //    public void calculateLargeLowerboundFirst(){
-//        int stepValue = 6;
-//        for (int i = 1; i < assignmentMatrix.getnRounds()-1; i++){
-//            int minDistanceStep = 0;
-//            if (assignmentMatrix.getIsComplete()){
-//                break;
-//            }
-//            int remainder = (assignmentMatrix.getnRounds()-1)%stepValue;
-//            for (int j = assignmentMatrix.getnRounds()-1; j >= stepValue; j-=stepValue){
-//                AssignmentMatrix matrix = new AssignmentMatrix(assignmentMatrix, j, stepValue+1);
-//                BranchAndBound branchAndBound = new BranchAndBound(matrix);
-//                AssignmentMatrix bestSolution = branchAndBound.executeBranchAndBound(); //TODO if this is null the problem is infeasible. At the moment no check because it might be null because of an implementation error.
-//                minDistanceMatrix[i][j-1] = bestSolution.getBestWeight();
-//                if (bestSolution.getBestWeight() + minDistanceStep > lowerboundPerRound[j-stepValue]){
-//                    lowerboundPerRound[j-stepValue] = bestSolution.getBestWeight() + minDistanceStep;
-//                    setNewLowerboundInAssignmentMatrix(j-stepValue, lowerboundPerRound[j-stepValue]);
-//                }
-//                minDistanceStep += bestSolution.getBestWeight();
-//            }
-//
-//            //TODO: for each amount of rounds check if the bounds are better.
-//
-//            //The last values in the array are the most useful. So why bother to fix the first ones.
-////            for (int j = remainder; j >0; j--){
-////
-////                minDistanceMatrix[i][j] = minDistanceMatrix[0][j];
-////                minDistanceStep += minDistanceMatrix[0][j];
-////            }
-//            stepValue++;
-//            lowestDistancePerAmountOfSteps[i] = minDistanceStep;
-//            System.out.println("Lowerbound calculated for step: " + stepValue);
-//            if (stepValue == 16){
-//                break;
-//            }
-//
-//        }
-//    }
-
 }
