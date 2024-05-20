@@ -47,7 +47,7 @@ public class AssignmentMatrix {
     private int[] lowerboundPerRound; //This needs to be synchonized between the b&b and lowerbounds
 
     public AssignmentMatrix(Instance instance) {
-        q1 = 7;
+        q1 = 5;
         q2 = 2;
         nRounds = instance.getnTeams() * 2 - 2;
         this.lowerboundsValue = new AtomicInteger(0);

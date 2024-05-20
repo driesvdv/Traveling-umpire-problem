@@ -2,13 +2,9 @@ package org.example;
 
 import algorithms.BranchAndBound;
 import algorithms.LowerBounds;
-import algorithms.LowerboundsV2;
 import data.Instance;
 import objects.AssignmentMatrix;
 import objects.SolutionConverter;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class Main {
     public static void main(String[] args) {
@@ -35,7 +31,7 @@ public class Main {
             System.exit(0);
         });
         Thread lowerBoundsThread = new Thread(() -> {
-            LowerboundsV2 lb = new LowerboundsV2(assignmentMatrix);
+            LowerBounds lb = new LowerBounds(assignmentMatrix);
             lb.calculateInitialViaHungarian();
             lb.calculateLowerbounds();
         });
