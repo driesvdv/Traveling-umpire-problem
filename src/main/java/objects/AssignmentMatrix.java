@@ -16,8 +16,6 @@ public class AssignmentMatrix {
     private int q1;
     private int q2;
     private int n;
-    private int lowerbound;
-    private AtomicInteger lowerboundsValue;
     private boolean isSubProblem;
 
     private MatchPair[][] bestSolution;
@@ -67,28 +65,8 @@ public class AssignmentMatrix {
         initWeightMatrix(instance);
 
         preprocessMatches();
-        //System.out.println("debug");
     }
-    public AssignmentMatrix(AssignmentMatrix totalMatrix, int startRound, int amountOfRounds, int lowerbound){
-        q1 = totalMatrix.getQ1();
-        q2 = totalMatrix.getQ2();
-        nRounds = amountOfRounds;
-        isSubProblem = true;
-        nUmpires = totalMatrix.getnUmpires();
-        nTeams = totalMatrix.getnTeams();
-        n = totalMatrix.getN();
-        this.lowerbound = lowerbound;
-        assignmentMatrix = new int[nRounds][nUmpires];
-        weightMatrix = new int[nTeams][nTeams];
-        translationMatrix = new MatchPair[nRounds][nUmpires];
-        solutionMatrix = new MatchPair[nRounds][nUmpires];
-        bestSolution = new MatchPair[nRounds][nUmpires];
-        isComplete = false;
-        initLowerboundPerRound();
-        initTranslationMatrix(totalMatrix.getTranslationMatrix(),startRound);
-        initAssignMentMatrix();
-        initWeightMatrix(totalMatrix.getWeightMatrix());
-    }
+
     //This implementation will be used to get the lowerbounds.
     //It will run from the last round to the first round, so the startround is the last round
     //The stepsize is the amount of rounds that are taken into account when calculating the lowerbound
@@ -195,50 +173,6 @@ public class AssignmentMatrix {
                 translationMatrix[i][j] = totalTranslationMatrix[i+startRound+1 - stepsize][j];
             }
         }
-       // System.out.println();
-    }
-
-    /**
-     * Can the umpire still visit each distinct hometeah at least once?
-     *
-     * @return false if umpire can't visit all teams anymore
-     * @return true if solution is valid
-     */
-    public boolean canUmpiresVisitAllTeams(int currentRound) {
-        int roundsLeft = nRounds - currentRound;
-        for (int i = 0; i < nUmpires; i++) {
-            boolean[] visited = new boolean[nTeams];
-            for (int j = 0; j <= currentRound; j++) {
-                if (solutionMatrix[j][i] != null) {
-                    int team1 = solutionMatrix[j][i].getHomeTeam();
-                    visited[team1 - 1] = true;
-                }
-            }
-            int unvisitedTeams = (int) IntStream.range(0, nTeams).filter(x -> !visited[x]).count();
-            if (unvisitedTeams > roundsLeft) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Returns true if all empires have only one match per round and thus no double
-     * assignments
-     *
-     * @return boolean
-     */
-    public boolean haveUmpiresOneMatchPerRound() {
-        // No double values per row
-        for (int i = 0; i < nRounds; i++) {
-            int[] row = assignmentMatrix[i];
-
-            if (Arrays.stream(row).distinct().count() != row.length) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     public int[][] getWeightMatrix() {
@@ -275,20 +209,6 @@ public class AssignmentMatrix {
 
     public List<MatchPair> getPossibleAllocations(int round, int umpire) {
         return solutionMatrix[round][umpire - 1].getFeasibleChildren();
-    }
-
-    public int getLowerbound() {
-        return lowerbound;
-    }
-    public int getLowerboundsValueAtomic(){
-        return lowerboundsValue.get();
-    }
-    public void setLowerboundsValue(int lb){
-        this.lowerboundsValue.set(lb);
-    }
-    //public int getLowerboundsPerRound(int round, int)
-    public void setTranslationMatrix(MatchPair[][] translationMatrix) {
-        this.translationMatrix = translationMatrix;
     }
 
     public MatchPair[][] getSolutionMatrix() {
@@ -346,8 +266,4 @@ public class AssignmentMatrix {
     public synchronized void setIsComplete(boolean value){
         isComplete = value;
     }
-    public synchronized boolean getIsComplete(){
-        return isComplete;
-    }
-
 }
