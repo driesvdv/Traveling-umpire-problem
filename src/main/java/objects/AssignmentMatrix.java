@@ -50,7 +50,6 @@ public class AssignmentMatrix {
         q1 = 5;
         q2 = 2;
         nRounds = instance.getnTeams() * 2 - 2;
-        this.lowerboundsValue = new AtomicInteger(0);
         nUmpires = instance.getnTeams() / 2;
         nTeams = instance.getnTeams();
         n = nTeams / 2;
@@ -101,7 +100,6 @@ public class AssignmentMatrix {
         nUmpires = totalMatrix.getnUmpires();
         nTeams = totalMatrix.getnTeams();
         n = totalMatrix.getN();
-        //this.lowerbound = lowerbound;
         assignmentMatrix = new int[nRounds][nUmpires];
         weightMatrix = new int[nTeams][nTeams];
         translationMatrix = new MatchPair[nRounds][nUmpires];

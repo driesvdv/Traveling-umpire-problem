@@ -46,11 +46,11 @@ public class BranchAndBound {
                 // Update the state for the next recursive call
                 umpire = nextUmpire;
                 round = nextRound;
-                if (assignmentMatrix.getAssignmentsWeight() + assignmentMatrix.getLowerboundPerRound(round) < upperBound) 
+                if (assignmentMatrix.getAssignmentsWeight() + assignmentMatrix.getLowerboundPerRound(round) < upperBound)
                 {
                         // if (assignmentMatrix.canUmpiresVisitAllTeams(currentRound)){ FASTER WITHOUT
                         // THIS CHECK
-                        executeBranchAndBound();    
+                        executeBranchAndBound();
                 }
                 umpire = currentUmpire;
                 round = currentRound;
