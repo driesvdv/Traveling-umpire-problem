@@ -81,15 +81,12 @@ public class LowerBounds {
         assignmentMatrix.setLowerboundPerRound(round, lowerbound);
     }
 
-    // Start calculating the lowerbounds at the last round
-    // The first round is calculate with the Hungarian algorithm so we start on 1
     public void calculateLowerbounds() {
         int stepValue = 2; // Initialize step value
 
         // Outer loop iterates all round sizes
         for (int i = 1; i < assignmentMatrix.getnRounds() - 1; i++) {
             int minDistanceStep = 0; // Initialize minimum distance for the current step
-            int remainder = (assignmentMatrix.getnRounds() - 1) % stepValue; // Calculate the remainder
 
             // Inner loop iterates through the rounds in steps of stepValue
             for (int j = assignmentMatrix.getnRounds() - 1; j >= stepValue; j -= stepValue) {
