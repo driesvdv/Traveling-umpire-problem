@@ -45,7 +45,7 @@ public class AssignmentMatrix {
     private int[] lowerboundPerRound; //This needs to be synchonized between the b&b and lowerbounds
 
     public AssignmentMatrix(Instance instance) {
-        q1 = 5;
+        q1 = 4;
         q2 = 3;
         nRounds = instance.getnTeams() * 2 - 2;
         nUmpires = instance.getnTeams() / 2;
@@ -209,6 +209,9 @@ public class AssignmentMatrix {
 
     public List<MatchPair> getPossibleAllocations(int round, int umpire) {
         return solutionMatrix[round][umpire - 1].getFeasibleChildren();
+    }
+    public int getHomeTeamOfMatchInRound(int round, int umpire){
+        return solutionMatrix[round][umpire - 1].getHomeTeam();
     }
 
     public MatchPair[][] getSolutionMatrix() {

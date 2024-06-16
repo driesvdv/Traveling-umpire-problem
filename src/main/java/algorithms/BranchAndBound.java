@@ -42,7 +42,10 @@ public class BranchAndBound {
 
             if (newWeight < upperBound) { // Early pruning: Prune branches with weights higher than the current upper bound
                 if (!isSolutionComplete(currentRound)) { // Check if the solution is complete
-                    if (newWeight + assignmentMatrix.getLowerboundPerRound(nextRound) < upperBound) { // More aggressive pruning
+                    //Todo add partial matching weight here.
+                    //int partial_matching_weight = calculatePartialMatchingCost(nextUmpire, nextRound);
+                    //Add the partial_matching_weight in the if statement below
+                    if (newWeight + assignmentMatrix.getLowerboundPerRound(nextRound) <= upperBound) { // More aggressive pruning
                         executeBranchAndBound(nextUmpire, nextRound, newWeight); // Recursive call with updated umpire, round, and weight
                     }
                 } else {
@@ -127,6 +130,29 @@ public class BranchAndBound {
         return feasibleAllocations;
     }
 
+    private int getFeasibleAllocationsMatchParing(int round, int umpire){
+        List<MatchPair> feasibleAllocations = assignmentMatrix.getPossibleAllocations(round, umpire);
+        int shortestDistance = Integer.MAX_VALUE;
+        if (round >= 0 && round < amountOfRounds - 1) {
+            feasibleAllocations.removeIf(mp -> {
+                for (int i = 0; i < umpire - 1; i++) {
+                    if (Objects.equals(mp, assignmentMatrix.getSolutionMatrix()[round + 1][i])) { // Remove infeasible allocations
+                        return true;
+                    }
+                }
+                return false;
+            });
+        }
+        int homeTeam = assignmentMatrix.getHomeTeamOfMatchInRound(round, umpire);
+        for (int i = 0; i < feasibleAllocations.size(); i++){
+            int distance = assignmentMatrix.getDistance(homeTeam - 1, feasibleAllocations.get(i).getHomeTeam() - 1);
+            if (distance < shortestDistance){
+                shortestDistance = distance;
+            }
+        }
+        return shortestDistance;
+    }
+
     private boolean checkPreviousMatches(int round, int umpire, int q1, int q2, MatchPair mp) {
         for (int i = 1; i < q1; i++) {
             if (round - i >= 0) {
@@ -153,5 +179,83 @@ public class BranchAndBound {
             }
         }
         return true;
+    }
+
+    private int calculatePartialMatchingCost(int nextUmpire, int nextRound){ //TODO maybe don't do this in the beginning?
+        if (nextUmpire == 1){ //If nextUmpire == 1, it goes to the next round so this isn't needed.
+            return 0;
+        }
+//        if (nextRound < 2){
+//            return 0;
+//        }
+//        if (nextRound > amountOfRounds - 2){
+//            return 0;
+//        }
+        int distance = 0;
+
+        for (int i = nextUmpire; i <= this.amountOfUmpires; i++){
+            distance += getShortestFeasibleDistance(nextRound -1, nextUmpire);
+            //distance += getFeasibleAllocationsMatchParing(nextRound -1, nextUmpire);
+        }
+//        List<MatchPair> possibleMatches = new ArrayList<>();
+//        for (int i = nextUmpire; i < assignmentMatrix.getnUmpires(); i++){ //TODO check: n of n+1
+//            possibleMatches.addAll(getFeasibleAllocationsMatchParing(nextRound -1, nextUmpire));
+//        }
+//        if (possibleMatches.size() == 0){
+//            return 0;
+//        }
+        //return getMinimalCostUsingHungarian(possibleMatches);
+        return distance;
+    }
+
+    public int getMinimalCostUsingHungarian(List<MatchPair> mps){
+        int[][] costMatrix = createNewDistanceMatrix(mps);
+        int[][] costMatrixCopy = new int[costMatrix.length][];
+
+        for (int row = 0; row < costMatrix.length; row++) {
+            costMatrixCopy[row] = costMatrix[row].clone();
+        }
+
+        HungarianAlgorithm hungarian = new HungarianAlgorithm(costMatrixCopy);
+        hungarian.reduceInitialMatrix();
+        hungarian.solveReducedMatrix();
+        int[][] assignments = hungarian.getAssignments();
+        int optimalAssignmentCost = getOptimalAssignmentCost(assignments, costMatrix);
+        return optimalAssignmentCost;
+    }
+    public int[][] createNewDistanceMatrix(List<MatchPair> mps){
+        int[][] distanceMatrix = new int[mps.size()][mps.size()];
+        for (int i = 0; i < mps.size(); i++){
+            for (int j = 0; j < mps.size(); j++){
+                distanceMatrix[i][j] = assignmentMatrix.getDistance(mps.get(i).getHomeTeam()-1, mps.get(j).getHomeTeam()-1);
+            }
+        }
+        return distanceMatrix;
+    }
+
+    public int getOptimalAssignmentCost(int[][] assignmentMatrix, int[][] costMatrix){
+        int distance = 0;
+        for (int i = 0; i < assignmentMatrix.length; i++) {
+            distance += costMatrix[i][assignmentMatrix[i][1]];
+        }
+        return distance;
+    }
+
+    private int getShortestFeasibleDistance(int round, int umpire) {
+        List<MatchPair> feasibleAllocations = assignmentMatrix.getPossibleAllocations(round, umpire);
+        if (feasibleAllocations.isEmpty()) {
+            return 0;
+        }
+
+        int previousHomeTeamLocation = -1;
+        if (umpire - 1 >= 0 && round >= 0 && assignmentMatrix.getSolutionMatrix()[round][umpire - 1] != null) {
+            previousHomeTeamLocation = assignmentMatrix.getSolutionMatrix()[round][umpire - 1].getHomeTeam() - 1; // Track previous home team location
+        }
+
+        int finalPreviousHomeTeamLocation = previousHomeTeamLocation;
+        return feasibleAllocations.stream()
+                .mapToInt(mp -> assignmentMatrix.getDistance(finalPreviousHomeTeamLocation, mp.getHomeTeam() - 1))
+                .min()
+                .orElse(Integer.MAX_VALUE); // Return the shortest distance
     }
 }

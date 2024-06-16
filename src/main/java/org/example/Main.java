@@ -19,7 +19,12 @@ public class Main {
             assignmentMatrix.setIsComplete(true);
             long EndTimeBranchAndBound = System.currentTimeMillis();
             System.out.println("\nSolution:");
-            System.out.println("Optimal weight: " + bestSolution.getBestWeight());
+            if (bestSolution != null) {
+                System.out.println("Optimal weight: " + bestSolution.getBestWeight());
+            } else {
+                System.out.println("Infeasible");
+            }
+            //System.out.println("Optimal weight: " + bestSolution.getBestWeight());
 
             System.out.println("Finished");
             System.out.println("Execution time: " + (EndTimeBranchAndBound - startTimeBranchAndBound) + "ms");
@@ -33,6 +38,7 @@ public class Main {
         Thread lowerBoundsThread = new Thread(() -> {
             LowerBounds lb = new LowerBounds(assignmentMatrix);
             lb.calculateInitialViaHungarian();
+            //lb.calculateInitialWithoutHungarian();
             lb.calculateLowerbounds();
         });
 

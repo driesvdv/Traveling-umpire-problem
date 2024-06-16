@@ -50,6 +50,27 @@ public class LowerBounds {
         System.out.println("Hungarian algorithm calculation completed.");
     }
 
+    public void calculateInitialWithoutHungarian(){
+        int minDistanceOneStep = 0;
+        int nRounds = assignmentMatrix.getnRounds();
+
+        for (int round = 0; round < nRounds - 1; round++) {
+            int shortestDistance = getShortestDistance(round);
+
+            minDistanceOneStep += shortestDistance;
+            minDistanceMatrix[0][round] = shortestDistance;
+            lowestDistancePerAmountOfSteps[0] = minDistanceOneStep;
+
+            for (int j = 0; j <= round; j++) {
+                lowerboundPerRound[j] += shortestDistance;
+                setNewLowerboundInAssignmentMatrix(j, lowerboundPerRound[j]);
+            }
+        }
+
+        lowerboundPerRound[0] = minDistanceOneStep;
+        System.out.println("Test");
+    }
+
     public int[][] createInitialDistanceMatrix(int round){
         MatchPair[] firstRound = assignmentMatrix.getTranslationMatrix()[round];
         MatchPair[] secondRound = assignmentMatrix.getTranslationMatrix()[round+1];
@@ -67,6 +88,24 @@ public class LowerBounds {
             }
         }
         return distanceMatrix;
+    }
+    public int getShortestDistance(int round){
+        MatchPair[] firstRound = assignmentMatrix.getTranslationMatrix()[round];
+        //MatchPair[] secondRound = assignmentMatrix.getTranslationMatrix()[round+1];
+        //int[][] distanceMatrix = new int[firstRound.length][secondRound.length];
+        int shortestDistanceTotal = 0;
+        for (int i = 0; i < firstRound.length; i++) {
+            List<MatchPair> feasibleAllocations = firstRound[i].getFeasibleChildren();
+            int shortestDistance = 999999;
+            for (MatchPair mp : feasibleAllocations) {
+                int distance = assignmentMatrix.getDistance(firstRound[i].getHomeTeam()-1, mp.getHomeTeam()-1);
+                if (distance < shortestDistance){
+                    shortestDistance = distance;
+                }
+            }
+            shortestDistanceTotal+= shortestDistance;
+        }
+        return shortestDistanceTotal;
     }
 
     public int getOptimalAssignmentCost(int[][] assignmentMatrix, int[][] costMatrix){
