@@ -39,13 +39,12 @@ public class BranchAndBound {
         for (MatchPair mp : feasibleAllocations) {
             assignmentMatrix.assignUmpireToMatch(currentRound, currentUmpire, mp); // Assign the match pair to the current umpire and round
             int newWeight = assignmentMatrix.getAssignmentsWeight(); // Calculate the new weight
-
             if (newWeight < upperBound) { // Early pruning: Prune branches with weights higher than the current upper bound
                 if (!isSolutionComplete(currentRound)) { // Check if the solution is complete
                     //Todo add partial matching weight here.
-                    //int partial_matching_weight = calculatePartialMatchingCost(nextUmpire, nextRound);
                     //Add the partial_matching_weight in the if statement below
-                    if (newWeight + assignmentMatrix.getLowerboundPerRound(nextRound) <= upperBound) { // More aggressive pruning
+                    int partial_matching_weight = calculatePartialMatchingCost(nextUmpire, nextRound, currentRound);
+                    if (newWeight + assignmentMatrix.getLowerboundPerRound(nextRound) + partial_matching_weight <= upperBound) { // More aggressive pruning
                         executeBranchAndBound(nextUmpire, nextRound, newWeight); // Recursive call with updated umpire, round, and weight
                     }
                 } else {
@@ -62,7 +61,11 @@ public class BranchAndBound {
         }
     }
 
+
     private void updateBestSolution(int weight) {
+        if (!isSubProblem){
+            int i = 0;
+        }
         if (weight < upperBound) { // Update the best solution if the new weight is lower than the current upper bound
             upperBound = weight;
             bestSolution = assignmentMatrix;
@@ -116,7 +119,19 @@ public class BranchAndBound {
                 return false;
             });
         }
+        if (round >= 0 && round < amountOfRounds - 1) {
+            // Create a set of match pairs that are already assigned in the next round
+            Set<MatchPair> nextRoundPairs = new HashSet<>();
+            for (int i = 0; i < amountOfUmpires; i++) {
+                MatchPair nextRoundPair = assignmentMatrix.getSolutionMatrix()[round + 1][i];
+                if (nextRoundPair != null) {
+                    nextRoundPairs.add(nextRoundPair);
+                }
+            }
 
+            // Remove match pairs that are already assigned in the next round
+            feasibleAllocations.removeIf(nextRoundPairs::contains);
+        }
         int previousHomeTeamLocation = -1;
         if (umpire - 1 >= 0 && round >= 0 && assignmentMatrix.getSolutionMatrix()[round][umpire - 1] != null) {
             previousHomeTeamLocation = assignmentMatrix.getSolutionMatrix()[round][umpire - 1].getHomeTeam() - 1; // Track previous home team location
@@ -124,24 +139,28 @@ public class BranchAndBound {
 
         int finalPreviousHomeTeamLocation = previousHomeTeamLocation;
         feasibleAllocations.removeIf(mp -> !checkPreviousMatches(round + 1, umpire, q1, q2, mp) ||
-                (upperBound < currDistance + assignmentMatrix.getDistance(mp.getHomeTeam() - 1, finalPreviousHomeTeamLocation))); // Aggressive pruning based on distance
-
+               (upperBound < currDistance + assignmentMatrix.getDistance(mp.getHomeTeam() - 1, finalPreviousHomeTeamLocation))); // Aggressive pruning based on distance
+        //feasibleAllocations.removeIf(mp -> (upperBound < currDistance + assignmentMatrix.getDistance(mp.getHomeTeam() - 1, finalPreviousHomeTeamLocation)));
         feasibleAllocations.sort(Comparator.comparingInt(mp -> assignmentMatrix.getDistance(finalPreviousHomeTeamLocation, mp.getHomeTeam() - 1))); // Sort allocations by distance
         return feasibleAllocations;
     }
 
     private int getFeasibleAllocationsMatchParing(int round, int umpire){
-        List<MatchPair> feasibleAllocations = assignmentMatrix.getPossibleAllocations(round, umpire);
-        int shortestDistance = Integer.MAX_VALUE;
+        //List<MatchPair> feasibleAllocations = assignmentMatrix.getPossibleAllocations(round, umpire);
+        List<MatchPair> feasibleAllocations = assignmentMatrix.getSolutionMatrix()[round][umpire].getFeasibleChildren();
+        int shortestDistance = 99999999;
         if (round >= 0 && round < amountOfRounds - 1) {
-            feasibleAllocations.removeIf(mp -> {
-                for (int i = 0; i < umpire - 1; i++) {
-                    if (Objects.equals(mp, assignmentMatrix.getSolutionMatrix()[round + 1][i])) { // Remove infeasible allocations
-                        return true;
-                    }
+            // Create a set of match pairs that are already assigned in the next round
+            Set<MatchPair> nextRoundPairs = new HashSet<>();
+            for (int i = 0; i < amountOfUmpires; i++) {
+                MatchPair nextRoundPair = assignmentMatrix.getSolutionMatrix()[round + 1][i];
+                if (nextRoundPair != null) {
+                    nextRoundPairs.add(nextRoundPair);
                 }
-                return false;
-            });
+            }
+
+            // Remove match pairs that are already assigned in the next round
+            feasibleAllocations.removeIf(nextRoundPairs::contains);
         }
         int homeTeam = assignmentMatrix.getHomeTeamOfMatchInRound(round, umpire);
         for (int i = 0; i < feasibleAllocations.size(); i++){
@@ -149,6 +168,9 @@ public class BranchAndBound {
             if (distance < shortestDistance){
                 shortestDistance = distance;
             }
+        }
+        if (feasibleAllocations.size() == 0){
+            return 0;
         }
         return shortestDistance;
     }
@@ -181,30 +203,15 @@ public class BranchAndBound {
         return true;
     }
 
-    private int calculatePartialMatchingCost(int nextUmpire, int nextRound){ //TODO maybe don't do this in the beginning?
-        if (nextUmpire == 1){ //If nextUmpire == 1, it goes to the next round so this isn't needed.
+    private int calculatePartialMatchingCost(int nextUmpire, int nextRound, int currentRound){ //TODO maybe don't do this in the beginning?
+        if (nextRound != currentRound){
             return 0;
         }
-//        if (nextRound < 2){
-//            return 0;
-//        }
-//        if (nextRound > amountOfRounds - 2){
-//            return 0;
-//        }
         int distance = 0;
 
-        for (int i = nextUmpire; i <= this.amountOfUmpires; i++){
-            distance += getShortestFeasibleDistance(nextRound -1, nextUmpire);
-            //distance += getFeasibleAllocationsMatchParing(nextRound -1, nextUmpire);
+        for (int i = nextUmpire; i < this.amountOfUmpires; i++){
+            distance += getFeasibleAllocationsMatchParing(nextRound-1, nextUmpire);
         }
-//        List<MatchPair> possibleMatches = new ArrayList<>();
-//        for (int i = nextUmpire; i < assignmentMatrix.getnUmpires(); i++){ //TODO check: n of n+1
-//            possibleMatches.addAll(getFeasibleAllocationsMatchParing(nextRound -1, nextUmpire));
-//        }
-//        if (possibleMatches.size() == 0){
-//            return 0;
-//        }
-        //return getMinimalCostUsingHungarian(possibleMatches);
         return distance;
     }
 

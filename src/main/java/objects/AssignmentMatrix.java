@@ -4,6 +4,7 @@ import data.Instance;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
@@ -60,7 +61,7 @@ public class AssignmentMatrix {
         isComplete = false;
         initLowerboundPerRound();
         initTranslationMatrix(instance);
-
+        //initTranslationMatrix2(instance);
         initAssignMentMatrix();
         initWeightMatrix(instance);
 
@@ -158,6 +159,33 @@ public class AssignmentMatrix {
             }
         }
     }
+    private void initTranslationMatrix2(Instance inst) {
+        for (int i = 0; i < nRounds; i++) {
+            List<Integer> teams = new ArrayList<>();
+            List<MatchPair> matchPairs = new ArrayList<>(); // Temporary list to hold match pairs
+
+            for (int j = 0; j < nTeams; j++) {
+                if (!teams.contains(Math.abs(inst.getOpponents()[i][j]))) {
+                    int team1 = inst.getOpponents()[i][j];
+                    int team2 = inst.getOpponents()[i][Math.abs(team1) - 1];
+                    teams.add(Math.abs(team1));
+                    teams.add(Math.abs(team2));
+                    matchPairs.add(new MatchPair(team1, team2)); // Add match pair to the list
+                }
+            }
+
+            // Sort the match pairs by the first team
+            matchPairs.sort(Comparator.comparingInt(MatchPair::getHomeTeam));
+
+            // Assign sorted match pairs to the translation matrix
+            for (int k = 0; k < matchPairs.size(); k++) {
+                translationMatrix[i][k] = matchPairs.get(k);
+            }
+        }
+        System.out.println();
+    }
+
+
 
     private void initTranslationMatrix(MatchPair[][] totalTranslationMatrix, int startround) {
         for (int i = 0; i < nRounds; i++) {
@@ -209,6 +237,9 @@ public class AssignmentMatrix {
 
     public List<MatchPair> getPossibleAllocations(int round, int umpire) {
         return solutionMatrix[round][umpire - 1].getFeasibleChildren();
+    }
+    public List<MatchPair> getPossibleAllocsTest(int round, int umpire){
+        return translationMatrix[round][umpire].getFeasibleChildren();
     }
     public int getHomeTeamOfMatchInRound(int round, int umpire){
         return solutionMatrix[round][umpire - 1].getHomeTeam();

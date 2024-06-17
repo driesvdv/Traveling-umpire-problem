@@ -159,6 +159,6 @@ public class LowerBounds {
             lowestDistancePerAmountOfSteps[i] = minDistanceStep;
         }
 
-        System.out.println();
+        //System.out.println();
     }
 }
