@@ -3,10 +3,7 @@ package objects;
 import data.Instance;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.IntStream;
 
 import java.util.List;
 
@@ -31,7 +28,7 @@ public class AssignmentMatrix {
      * Each cell contains an integer which maps to the teams playing the match.
      * These teams can be found in the translation matrix.
      */
-    private int[][] assignmentMatrix;
+    //private int[][] assignmentMatrix;
     private MatchPair[][] solutionMatrix;
 
     /**
@@ -46,14 +43,14 @@ public class AssignmentMatrix {
     private int[] lowerboundPerRound; //This needs to be synchonized between the b&b and lowerbounds
 
     public AssignmentMatrix(Instance instance) {
-        q1 = 4;
+        q1 = 5;
         q2 = 3;
         nRounds = instance.getnTeams() * 2 - 2;
         nUmpires = instance.getnTeams() / 2;
         nTeams = instance.getnTeams();
         n = nTeams / 2;
         isSubProblem = false;
-        assignmentMatrix = new int[nRounds][nUmpires];
+        //assignmentMatrix = new int[nRounds][nUmpires];
         weightMatrix = new int[nTeams][nTeams];
         translationMatrix = new MatchPair[nRounds][nUmpires];
         solutionMatrix = new MatchPair[nRounds][nUmpires];
@@ -62,7 +59,7 @@ public class AssignmentMatrix {
         initLowerboundPerRound();
         initTranslationMatrix(instance);
         //initTranslationMatrix2(instance);
-        initAssignMentMatrix();
+        initSolutionMatrix();
         initWeightMatrix(instance);
 
         preprocessMatches();
@@ -79,7 +76,7 @@ public class AssignmentMatrix {
         nUmpires = totalMatrix.getnUmpires();
         nTeams = totalMatrix.getnTeams();
         n = totalMatrix.getN();
-        assignmentMatrix = new int[nRounds][nUmpires];
+        //assignmentMatrix = new int[nRounds][nUmpires];
         weightMatrix = new int[nTeams][nTeams];
         translationMatrix = new MatchPair[nRounds][nUmpires];
         solutionMatrix = new MatchPair[nRounds][nUmpires];
@@ -87,7 +84,7 @@ public class AssignmentMatrix {
         isComplete = false;
         initLowerboundPerRound();
         initTranslationMatrixLowerbounds(totalMatrix.getTranslationMatrix(),startRound, stepSize);
-        initAssignMentMatrix();
+        initSolutionMatrix();
         initWeightMatrix(totalMatrix.getWeightMatrix());
     }
 
@@ -105,22 +102,23 @@ public class AssignmentMatrix {
     }
 
     public void preprocessMatches() {
-        Preprocessing preprocesser = new Preprocessing(this.assignmentMatrix, q1, q2, translationMatrix);
+        //Preprocessing preprocesser = new Preprocessing(this.assignmentMatrix, q1, q2, translationMatrix);
+        Preprocessing preprocesser = new Preprocessing(q1, q2, translationMatrix);
         preprocesser.preProcessQ1andQ2();
         this.translationMatrix = preprocesser.getMatchPairs();
     }
 
     // Todo make this with MatchPairs
-    private void initAssignMentMatrix() {
+    private void initSolutionMatrix() {
         for (int i = 0; i < nRounds; i++) {
             for (int j = 0; j < nUmpires; j++) {
                 if (i == 0) {
                     // Fix the first round for symmetry breaking
                     solutionMatrix[i][j] = translationMatrix[i][j];
-                    assignmentMatrix[i][j] = j;
+                    //assignmentMatrix[i][j] = j;
                 } else {
                     // Initialize the rest of the matrix with -1 (no assignment)
-                    assignmentMatrix[i][j] = -1;
+                    //assignmentMatrix[i][j] = -1;
                     solutionMatrix[i][j] = null;
                 }
             }
@@ -142,6 +140,11 @@ public class AssignmentMatrix {
         }
     }
 
+    /**
+     * Initializes the translation matrix with the match pairs.
+     * The translation matrix is a 2D array that represents the different matches per round,
+     * as MatchPair objects.
+     */
     private void initTranslationMatrix(Instance inst) {
         for (int i = 0; i < nRounds; i++) {
             List<Integer> teams = new ArrayList<>();
@@ -227,9 +230,9 @@ public class AssignmentMatrix {
         return isSubProblem;
     }
 
-    public int[][] getAssignmentMatrix() {
-        return assignmentMatrix;
-    }
+//    public int[][] getAssignmentMatrix() {
+//        return assignmentMatrix;
+//    }
 
     public int getN() {
         return n;

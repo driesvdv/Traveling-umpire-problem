@@ -7,7 +7,14 @@ public class Preprocessing {
     private MatchPair[][] matchPairs;
 
     public Preprocessing(int[][] opponents, int q1, int q2, MatchPair[][] inputMatchpairs){
-        this.opponents = opponents;
+        //this.opponents = opponents;
+        this.q1 = q1;
+        this.q2 = q2;
+        this.matchPairs = inputMatchpairs;
+
+    }
+    public Preprocessing(int q1, int q2, MatchPair[][] inputMatchpairs){
+        //this.opponents = opponents;
         this.q1 = q1;
         this.q2 = q2;
         this.matchPairs = inputMatchpairs;
