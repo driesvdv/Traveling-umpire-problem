@@ -9,9 +9,17 @@ import objects.SolutionConverter;
 public class Main {
     public static void main(String[] args) {
         //long startTime = System.currentTimeMillis();
+        if (args.length < 3) {
+            System.out.println("Usage: java -jar yourjarfile.jar <filename> <q1> <q2>");
+            System.exit(1);
+        }
 
-        Instance instance = new Instance();
-        AssignmentMatrix assignmentMatrix = new AssignmentMatrix(instance);
+        String filename = args[0];
+        int q1 = Integer.parseInt(args[1]);
+        int q2 = Integer.parseInt(args[2]);
+
+        Instance instance = new Instance(filename);
+        AssignmentMatrix assignmentMatrix = new AssignmentMatrix(instance, q1, q2);
 
         Thread branchAndBoundThread = new Thread(() -> {
             long startTimeBranchAndBound = System.currentTimeMillis();

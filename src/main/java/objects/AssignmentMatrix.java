@@ -42,9 +42,9 @@ public class AssignmentMatrix {
     private MatchPair[][] translationMatrix;
     private int[] lowerboundPerRound; //This needs to be synchonized between the b&b and lowerbounds
 
-    public AssignmentMatrix(Instance instance) {
-        q1 = 5;
-        q2 = 3;
+    public AssignmentMatrix(Instance instance, int q1, int q2) {
+        this.q1 = q1;
+        this.q2 = q2;
         nRounds = instance.getnTeams() * 2 - 2;
         nUmpires = instance.getnTeams() / 2;
         nTeams = instance.getnTeams();
