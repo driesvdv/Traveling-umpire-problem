@@ -9,9 +9,17 @@ import objects.SolutionConverter;
 public class Main {
     public static void main(String[] args) {
         //long startTime = System.currentTimeMillis();
+        if (args.length < 3) {
+            System.out.println("Usage: java -jar yourjarfile.jar <filename> <q1> <q2>");
+            System.exit(1);
+        }
 
-        Instance instance = new Instance();
-        AssignmentMatrix assignmentMatrix = new AssignmentMatrix(instance);
+        String filename = args[0];
+        int q1 = Integer.parseInt(args[1]);
+        int q2 = Integer.parseInt(args[2]);
+
+        Instance instance = new Instance(filename);
+        AssignmentMatrix assignmentMatrix = new AssignmentMatrix(instance, q1, q2);
 
         Thread branchAndBoundThread = new Thread(() -> {
             long startTimeBranchAndBound = System.currentTimeMillis();
@@ -19,7 +27,12 @@ public class Main {
             assignmentMatrix.setIsComplete(true);
             long EndTimeBranchAndBound = System.currentTimeMillis();
             System.out.println("\nSolution:");
-            System.out.println("Optimal weight: " + bestSolution.getBestWeight());
+            if (bestSolution != null) {
+                System.out.println("Optimal weight: " + bestSolution.getBestWeight());
+            } else {
+                System.out.println("Infeasible");
+            }
+            //System.out.println("Optimal weight: " + bestSolution.getBestWeight());
 
             System.out.println("Finished");
             System.out.println("Execution time: " + (EndTimeBranchAndBound - startTimeBranchAndBound) + "ms");
@@ -33,6 +46,7 @@ public class Main {
         Thread lowerBoundsThread = new Thread(() -> {
             LowerBounds lb = new LowerBounds(assignmentMatrix);
             lb.calculateInitialViaHungarian();
+            //lb.calculateInitialWithoutHungarian();
             lb.calculateLowerbounds();
         });
 

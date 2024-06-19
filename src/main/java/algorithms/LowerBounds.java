@@ -6,15 +6,15 @@ import objects.MatchPair;
 import java.util.List;
 
 public class LowerBounds {
-    private int[][] minDistanceMatrix;
+    //private int[][] minDistanceMatrix;
     private AssignmentMatrix assignmentMatrix;
-    private int[] lowestDistancePerAmountOfSteps;
+    //private int[] lowestDistancePerAmountOfSteps;
     private int[] lowerboundPerRound;
 
     public LowerBounds(AssignmentMatrix assignmentMatrix){
         this.assignmentMatrix = assignmentMatrix;
-        this.minDistanceMatrix = new int[assignmentMatrix.getnRounds()-1][assignmentMatrix.getnRounds()-1];
-        this.lowestDistancePerAmountOfSteps = new int[assignmentMatrix.getnRounds()];
+        //this.minDistanceMatrix = new int[assignmentMatrix.getnRounds()-1][assignmentMatrix.getnRounds()-1];
+        //this.lowestDistancePerAmountOfSteps = new int[assignmentMatrix.getnRounds()];
         this.lowerboundPerRound = new int[assignmentMatrix.getnRounds() - 1];
     }
 
@@ -37,8 +37,8 @@ public class LowerBounds {
             int optimalAssignmentCost = getOptimalAssignmentCost(assignments, costMatrix);
 
             minDistanceOneStep += optimalAssignmentCost;
-            minDistanceMatrix[0][round] = optimalAssignmentCost;
-            lowestDistancePerAmountOfSteps[0] = minDistanceOneStep;
+            //minDistanceMatrix[0][round] = optimalAssignmentCost;
+            //lowestDistancePerAmountOfSteps[0] = minDistanceOneStep;
 
             for (int j = 0; j <= round; j++) {
                 lowerboundPerRound[j] += optimalAssignmentCost;
@@ -48,6 +48,27 @@ public class LowerBounds {
 
         lowerboundPerRound[0] = minDistanceOneStep;
         System.out.println("Hungarian algorithm calculation completed.");
+    }
+
+    public void calculateInitialWithoutHungarian(){
+        int minDistanceOneStep = 0;
+        int nRounds = assignmentMatrix.getnRounds();
+
+        for (int round = 0; round < nRounds - 1; round++) {
+            int shortestDistance = getShortestDistance(round);
+
+            minDistanceOneStep += shortestDistance;
+            //minDistanceMatrix[0][round] = shortestDistance;
+            //lowestDistancePerAmountOfSteps[0] = minDistanceOneStep;
+
+            for (int j = 0; j <= round; j++) {
+                lowerboundPerRound[j] += shortestDistance;
+                setNewLowerboundInAssignmentMatrix(j, lowerboundPerRound[j]);
+            }
+        }
+
+        lowerboundPerRound[0] = minDistanceOneStep;
+        System.out.println("Test");
     }
 
     public int[][] createInitialDistanceMatrix(int round){
@@ -67,6 +88,24 @@ public class LowerBounds {
             }
         }
         return distanceMatrix;
+    }
+    public int getShortestDistance(int round){
+        MatchPair[] firstRound = assignmentMatrix.getTranslationMatrix()[round];
+        //MatchPair[] secondRound = assignmentMatrix.getTranslationMatrix()[round+1];
+        //int[][] distanceMatrix = new int[firstRound.length][secondRound.length];
+        int shortestDistanceTotal = 0;
+        for (int i = 0; i < firstRound.length; i++) {
+            List<MatchPair> feasibleAllocations = firstRound[i].getFeasibleChildren();
+            int shortestDistance = 999999;
+            for (MatchPair mp : feasibleAllocations) {
+                int distance = assignmentMatrix.getDistance(firstRound[i].getHomeTeam()-1, mp.getHomeTeam()-1);
+                if (distance < shortestDistance){
+                    shortestDistance = distance;
+                }
+            }
+            shortestDistanceTotal+= shortestDistance;
+        }
+        return shortestDistanceTotal;
     }
 
     public int getOptimalAssignmentCost(int[][] assignmentMatrix, int[][] costMatrix){
@@ -89,7 +128,7 @@ public class LowerBounds {
             int minDistanceStep = 0; // Initialize minimum distance for the current step
 
             // Inner loop iterates through the rounds in steps of stepValue
-            for (int j = assignmentMatrix.getnRounds() - 1; j >= stepValue; j -= stepValue) {
+            for (int j = assignmentMatrix.getnRounds() - 1; j >= assignmentMatrix.getnRounds() / 2; j -= stepValue) {
                 // Create a new AssignmentMatrix for the current sub-problem
                 AssignmentMatrix matrix = new AssignmentMatrix(assignmentMatrix, j, stepValue + 1);
 
@@ -98,7 +137,7 @@ public class LowerBounds {
                 AssignmentMatrix bestSolution = branchAndBound.executeBranchAndBound();
 
                 // Store the best weight (cost) from the solution
-                minDistanceMatrix[i][j - 1] = bestSolution.getBestWeight();
+                //minDistanceMatrix[i][j - 1] = bestSolution.getBestWeight();
 
                 // Update lower bounds if the new cost is greater than the current lower bound
                 int difference = bestSolution.getBestWeight() + minDistanceStep - lowerboundPerRound[j - stepValue];
@@ -117,9 +156,9 @@ public class LowerBounds {
             stepValue++;
 
             // Store the minimum distance for the current step size
-            lowestDistancePerAmountOfSteps[i] = minDistanceStep;
+            //lowestDistancePerAmountOfSteps[i] = minDistanceStep;
         }
 
-        System.out.println();
+        //System.out.println();
     }
 }
