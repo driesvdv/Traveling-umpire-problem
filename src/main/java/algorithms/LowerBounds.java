@@ -128,7 +128,7 @@ public class LowerBounds {
             int minDistanceStep = 0; // Initialize minimum distance for the current step
 
             // Inner loop iterates through the rounds in steps of stepValue
-            for (int j = assignmentMatrix.getnRounds() - 1; j >= stepValue; j -= stepValue) {
+            for (int j = assignmentMatrix.getnRounds() - 1; j >= assignmentMatrix.getnRounds() / 2; j -= stepValue) {
                 // Create a new AssignmentMatrix for the current sub-problem
                 AssignmentMatrix matrix = new AssignmentMatrix(assignmentMatrix, j, stepValue + 1);
 
