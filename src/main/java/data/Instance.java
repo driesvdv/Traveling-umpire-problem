@@ -7,9 +7,9 @@ public class Instance {
     private int[][] dist;
     private int[][] opponents;
 
-    public Instance() {
-        String fileName = "src/instances/umps10.txt"; // Change this to your file path
-
+    public Instance(String instanceFile) {
+        //String fileName = "src/instances/umps12.txt"; // Change this to your file path
+        String fileName = "src/instances/" + instanceFile; // Change this to your file path
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             String line;
             // Read nTeams
