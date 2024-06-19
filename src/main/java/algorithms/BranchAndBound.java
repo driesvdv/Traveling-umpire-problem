@@ -112,53 +112,53 @@ public class BranchAndBound {
     }
 
     private List<MatchPair> getFeasibleAllocations(int round, int umpire, int q1, int q2, int currDistance) {
-        List<MatchPair> feasibleAllocations = assignmentMatrix.getPossibleAllocations(round, umpire);
-    
-        if (round >= 0 && round < amountOfRounds - 1) {
-            feasibleAllocations.removeIf(mp -> {
-                for (int i = 0; i < umpire - 1; i++) {
-                    if (Objects.equals(mp, assignmentMatrix.getSolutionMatrix()[round + 1][i])) {
-                        return true;
-                    }
-                }
-                return false;
-            });
-        }
-    
-        // Create a set of match pairs that are already assigned in the next round
-        Set<MatchPair> nextRoundPairs = new HashSet<>();
-        if (round >= 0 && round < amountOfRounds - 1) {
-            for (int i = 0; i < amountOfUmpires; i++) {
-                MatchPair nextRoundPair = assignmentMatrix.getSolutionMatrix()[round + 1][i];
-                if (nextRoundPair != null) {
-                    nextRoundPairs.add(nextRoundPair);
+    List<MatchPair> feasibleAllocations = assignmentMatrix.getPossibleAllocations(round, umpire);
+
+    if (round >= 0 && round < amountOfRounds - 1) {
+        feasibleAllocations.removeIf(mp -> {
+            for (int i = 0; i < umpire - 1; i++) {
+                if (Objects.equals(mp, assignmentMatrix.getSolutionMatrix()[round + 1][i])) {
+                    return true;
                 }
             }
-        }
-    
-        // Remove match pairs that are already assigned in the next round
-        feasibleAllocations.removeIf(nextRoundPairs::contains);
-    
-        int previousHomeTeamLocation = -1;
-        if (umpire - 1 >= 0 && round >= 0 && assignmentMatrix.getSolutionMatrix()[round][umpire - 1] != null) {
-            previousHomeTeamLocation = assignmentMatrix.getSolutionMatrix()[round][umpire - 1].getHomeTeam() - 1;
-        }
-    
-        int finalPreviousHomeTeamLocation = previousHomeTeamLocation;
-        
-        // Distance-based pruning and check previous matches
-        feasibleAllocations.removeIf(mp -> 
-            !checkPreviousMatches(round + 1, umpire, q1, q2, mp) ||
-            (upperBound < currDistance + assignmentMatrix.getDistance(mp.getHomeTeam() - 1, finalPreviousHomeTeamLocation))
-        );
-        
-        feasibleAllocations.sort(Comparator.comparingInt(mp -> 
-            assignmentMatrix.getDistance(finalPreviousHomeTeamLocation, mp.getHomeTeam() - 1))
-        );
-    
-        return feasibleAllocations;
+            return false;
+        });
     }
+
+    // Create a set of match pairs that are already assigned in the next round
+    Set<MatchPair> nextRoundPairs = new HashSet<>();
+    if (round >= 0 && round < amountOfRounds - 1) {
+        for (int i = 0; i < amountOfUmpires; i++) {
+            MatchPair nextRoundPair = assignmentMatrix.getSolutionMatrix()[round + 1][i];
+            if (nextRoundPair != null) {
+                nextRoundPairs.add(nextRoundPair);
+            }
+        }
+    }
+
+    // Remove match pairs that are already assigned in the next round
+    feasibleAllocations.removeIf(nextRoundPairs::contains);
+
+    int previousHomeTeamLocation = -1;
+    if (umpire - 1 >= 0 && round >= 0 && assignmentMatrix.getSolutionMatrix()[round][umpire - 1] != null) {
+        previousHomeTeamLocation = assignmentMatrix.getSolutionMatrix()[round][umpire - 1].getHomeTeam() - 1;
+    }
+
+    int finalPreviousHomeTeamLocation = previousHomeTeamLocation;
     
+    // Distance-based pruning and check previous matches
+    feasibleAllocations.removeIf(mp -> 
+        !checkPreviousMatches(round + 1, umpire, q1, q2, mp) ||
+        (upperBound < currDistance + assignmentMatrix.getDistance(mp.getHomeTeam() - 1, finalPreviousHomeTeamLocation))
+    );
+    
+    feasibleAllocations.sort(Comparator.comparingInt(mp -> 
+        assignmentMatrix.getDistance(finalPreviousHomeTeamLocation, mp.getHomeTeam() - 1))
+    );
+
+    return feasibleAllocations;
+}
+
 
     private int getFeasibleAllocationsMatchParing(int round, int umpire){
         //List<MatchPair> feasibleAllocations = assignmentMatrix.getPossibleAllocations(round, umpire);
